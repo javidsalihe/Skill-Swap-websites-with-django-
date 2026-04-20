@@ -1,0 +1,282 @@
+{% extends 'adminPanel/layouts/base.html' %}
+{% load static %}
+{% block header_title %}
+Benutzer Bearbeitung
+{% endblock %}
+{% block title %}
+Benutzer Bearbeitung
+{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css"
+      integrity="sha512-2bBQCjcnw658Lho4nlXJcc6WkV/UxpE/sAokbXPxQNGqmNdQrWqtw26Ns9kFF/yG792pKR1Sx8/Y1Lf1XN4GKA=="
+      crossorigin="anonymous" referrerpolicy="no-referrer"/>
+<link rel="stylesheet" href="{% static 'css/profile_img.css' %}">
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+
+        <div class="col-md-8 col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <form action="{% url 'update_user_profile' user.id %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+
+                        <input type="hidden" name="longitude" id="longitude_id" value="{{ user.address_id.longitude|default:'' }}">
+<input type="hidden" name="latitude" id="latitude_id" value="{{ user.address_id.latitude|default:'' }}">
+<input type="hidden" name="timezone" id="timezone_id" value="{{ user.address_id.timezone|default:'' }}">
+
+                     <div class="d-flex flex-column mb-4">
+                        <label for="profile_image_url" class="profile-image-wrapper">
+                            <img src="{% if user.profile_image_url %}{{ user.profile_image_url.url }}{% else %}{% static 'images/logo/skillswap.jpg' %}{% endif %}"
+                                 class="profile-img rounded-circle"
+                                 id="preview-img"
+                                 style="width: 150px; height: 150px; object-fit: cover;">
+
+                            <input type="file" id="profile_image_url" name="profile_image_url" class="d-none" accept="image/*">
+                        </label>
+                        <small class="text-danger" id="error-profile_image_url"></small>
+                        {% if form.profile_image_url.errors %}
+                        <div class="text-danger small">{{ form.profile_image_url.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+
+                        <div class="mb-3">
+                            <label for="user_name" class="form-label">Benutzername</label>
+                            <input type="text" name="username" value="{{ user.username }}" class="form-control"
+                                   id="user_name">
+                            <div class="invalid-feedback" id="error-user_name"></div>
+                            {% if form.username.errors %}
+                            <div class="text-danger small">{{ form.username.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label for="first_name" class="form-label">Vorname</label>
+                            <input type="text" name="first_name" value="{{ user.first_name }}" class="form-control"
+                                   id="first_name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="last_name" class="form-label">Nachname</label>
+                            <input type="text" name="last_name" value="{{ user.last_name }}" class="form-control"
+                                   id="last_name">
+                        </div>
+
+                       <div class="mb-3">
+                            <label for="gender" class="form-label">Geschlecht</label>
+                            <select name="gender" id="gender" class="form-control">
+                                <option value="">Wählen Sie Ihr Geschlecht</option>
+                                <option value="female" {% if user.gender == 'female' %} selected {% endif %}>Female</option>
+                                <option value="male" {% if user.gender == 'male' %} selected {% endif %}>Male</option>
+                                <option value="other" {% if user.gender == 'other' %} selected {% endif %}>Other</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Adresse</label>
+                            <input type="email" name="email" class="form-control" id="email"
+                                   value="{{ user.email|default:'' }}">
+                            <div class="invalid-feedback" id="error-email"></div>
+                            {% if form.email.errors %}
+                            <div class="text-danger small">{{ form.email.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+
+
+                         <div class="mb-3">
+        <label for="password" class="form-label">Neues Passwort</label>
+        <input type="password" name="password" id="password" class="form-control"
+               placeholder="Nur ausfüllen, wenn Sie es ändern möchten">
+    </div>
+
+    <div class="mb-3">
+        <label for="confirm_password" class="form-label">Passwort bestätigen</label>
+        <input type="password" name="confirm_password" id="confirm_password" class="form-control"
+               placeholder="Passwort erneut eingeben">
+    </div>
+
+
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Telefon Nummer</label>
+                            <input type="tel" name="phone" value="{{ user.phone }}" class="form-control" id="phone"
+                                   placeholder="+49123456789"
+                                   pattern="^\+?\d+$"
+                                   inputmode="numeric">
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label for="street_name" class="form-label">Straße</label>
+                            <input type="text" name="street_name" value="{{ address.street_name }}" class="form-control"
+                                   id="street_name">
+                            {% if form.street_name.errors %}
+                            <div class="text-danger small">{{ form.street_name.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="street_number" class="form-label">Straße Nummer</label>
+                            <input type="number" name="street_number" value="{{ address.street_number }}"
+                                   class="form-control" id="street_number">
+                            {% if form.street_number.errors %}
+                            <div class="text-danger small">{{ form.street_number.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="postal_code" class="form-label">Postleitzahl</label>
+                            <input type="number" name="postal_code" value="{{ address.postal_code }}"
+                                   class="form-control" id="postal_code">
+                            {% if form.postal_code.errors %}
+                            <div class="text-danger small">{{ form.postal_code.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                    <div class="mb-3">
+
+    <label for="country_id"  class="form-label">Land</label>
+    <select id="country_id" name="country_id" class="form-select">
+        <option value="">Land auswählen</option>
+        {% for country in countries %}
+        <option value="{{ country.id }}" {% if current_country_id == country.id %}selected{% endif %}>
+            {{ country.country_name }}
+        </option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="mb-3">
+    <label for="city_id"  class="form-label">Stadt</label>
+    <select id="city_id" name="city_id" class="form-select">
+        <option value="">Stadt auswählen</option>
+    </select>
+</div>
+
+<div class="mb-3">
+    <label for="district_id"  class="form-label">Bezirk</label>
+    <select id="district_id" name="district_id" class="form-select">
+        <option value="">Bezirk auswählen</option>
+    </select>
+</div>
+
+                        <div class="mb-3">
+                            <label for="language_id" class="form-label">Sprache</label>
+                            <select id="language_id" name="language_id" class="form-select">
+                                <option value="">Sprache auswählen</option>
+                                {% for language in languages %}
+                                <option value="{{ language.id }}"
+                                        {% if user.preferred_language_id == language.id %} selected {% endif %}>
+                                    {{ language.language_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notifications_via" class="form-label">Notification via </label>
+                            <select id="notifications_via" name="notifications_via" class="form-select">
+                                <option value="">Notifications via ?</option>
+                                <option value="email" {% if user.notifications_via == 'email' %} selected {% endif %}>Email</option>
+                                <option value="sms" disabled {% if user.notifications_via == 'sms' %} selected {% endif %}>SMS</option>
+                                <option value="telefon" disabled {% if user.notifications_via == 'telefon' %} selected {% endif %}>telefon</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="bio" class="form-label">Schreiben Sie über sich selbst</label>
+                            <textarea name="bio" class="form-control" id="bio" rows="4"
+                                      style="resize: none;">{{ user.bio }}</textarea>
+                        </div>
+
+                        {% if user.is_authenticated and user.is_superuser %}
+                                <div class="mb-3 form-check">
+                            <input type="checkbox" name="is_active" class="form-check-input" id="is_active"
+                                   {% if user.is_active %} checked {% endif %}>
+                            <label class="form-check-label" for="is_active">Ist Aktiv?</label>
+                        </div>
+
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" name="is_staff" class="form-check-input" id="is_staff"
+                                   {% if user.is_staff %} checked {% endif %}>
+                            <label class="form-check-label" for="is_staff">Ist Mitarbeiter ? </label>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" name="is_superuser" class="form-check-input" id="is_superuser"
+                                   {% if user.is_superuser %} checked {% endif %}>
+                            <label class="form-check-label" for="is_superuser">Ist Super Benutzer ? </label>
+                        </div>
+                        {% endif %}
+
+
+                        <button type="submit" class="save-button btn">speichern</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.min.js"
+        integrity="sha512-nKXmKvJyiGQy343jatQlzDprflyB5c+tKCzGP3Uq67v+lmzfnZUi/ZT+fc6ITZfSC5HhaBKUIvr/nTLCV+7F+Q=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+    $(document).ready(function () {
+    // مقادیر اولیه از سمت جنگو
+    const preSelectedCity = "{{ current_city_id|default:'' }}";
+    const preSelectedDistrict = "{{ current_district_id|default:'' }}";
+
+    // ۱. تغییر کشور یا لود اولیه شهرها
+    $('#country_id').on('change', function (e, isInitial = false) {
+        let countryId = $(this).val();
+        if (!countryId) return;
+
+        $.get("{% url 'load_cities' %}", {country_id: countryId}, function (data) {
+            let options = '<option value="">Stadt auswählen</option>';
+            data.forEach(city => {
+                let selected = (isInitial && city.id == preSelectedCity) ? 'selected' : '';
+                options += `<option value="${city.id}" ${selected}>${city.name}</option>`;
+            });
+            $('#city_id').html(options);
+
+            // اگر لود اولیه است، حالا منطقه را لود کن
+            if (isInitial && preSelectedCity) {
+                $('#city_id').trigger('change', [true]);
+            }
+        });
+    });
+
+    // ۲. تغییر شهر یا لود اولیه مناطق
+    $('#city_id').on('change', function (e, isInitial = false) {
+        let cityId = $(this).val();
+        if (!cityId) return;
+
+        $.get("{% url 'load_districts' %}", {city_id: cityId}, function (data) {
+            let options = '<option value="">Bezirk auswählen</option>';
+            data.forEach(dist => {
+                let selected = (isInitial && dist.id == preSelectedDistrict) ? 'selected' : '';
+                options += `<option value="${dist.id}" ${selected}>${dist.name}</option>`;
+            });
+            $('#district_id').html(options);
+        });
+    });
+
+    // ۳. شروع زنجیره لود (فقط در حالت ویرایش)
+    if ($('#country_id').val()) {
+        $('#country_id').trigger('change', [true]);
+    }
+});
+</script>
+<script src="{% static 'users/js/user-form-validation.js' %}"></script>
+<script src="{% static 'users/js/user-profile.js' %}"></script>
+
+{% endblock %}

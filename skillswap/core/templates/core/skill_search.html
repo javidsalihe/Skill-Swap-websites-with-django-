@@ -1,0 +1,127 @@
+{% extends 'adminPanel/layouts/base.html' %}
+{% load static %}
+
+{% block title %} Skills suchen {% endblock %}
+{% block header_title %} Skills suchen {% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .filter-sidebar {
+        background: #fff;
+        border-radius: 15px;
+        padding: 20px;
+        border: 1px solid var(--border-color);
+        position: sticky;
+        top: 20px;
+    }
+
+    .filter-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 20px;
+        border-bottom: 2px solid var(--secondary-color);
+        padding-bottom: 10px;
+    }
+
+    .filter-group {
+        margin-bottom: 25px;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        display: block;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+    }
+
+    .range-slider {
+        width: 100%;
+        accent-color: var(--primary-color);
+    }
+
+    .result-card {
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+    }
+
+    .result-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(35, 60, 47, 0.1);
+    }
+
+    .user-avatar-md {
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        border: 3px solid var(--secondary-color);
+        object-fit: cover;
+    }
+
+    .skill-badge {
+        background: rgba(35, 60, 47, 0.05);
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        display: inline-block;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-9 col-md-8">
+            <div class="card mb-4" style="border-radius: 15px;">
+                <div class="card-body p-3">
+                    <form class="d-flex gap-2">
+                        <input type="text" name="skill" class="form-control border-0 bg-light" placeholder="Skill suchen..." value="{{ request.GET.skill }}">
+                        <input type="text" name="postalcode" class="form-control border-0 bg-light" style="width: 120px;" placeholder="PLZ" value="{{ request.GET.postalcode }}">
+                        <button class="btn btn-primary" style="background: var(--primary-color)"><i class="fas fa-search"></i></button>
+                    </form>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="text-muted small"><strong>{{ results|length }}</strong> Ergebnisse für "{{ request.GET.skill }}"</h6>
+            </div>
+            <div class="row g-3">
+                {% for res in results %}
+                <div class="col-xl-4 col-lg-6">
+                    <div class="card result-card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <img src="{% static 'images/default-avatar.png' %}" class="user-avatar-md">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">{{ res.user }}</h6>
+                                    <small class="text-muted"><i class="fas fa-location-dot me-1"></i> {{ res.distance_km }} km entfernt</small>
+                                </div>
+                            </div>
+
+                            <div class="mb-2">
+                                <p class="small text-muted mb-1">Bietet an:</p>
+                                <span class="skill-badge fw-bold text-primary">{{ res.offered_skill }}</span>
+                            </div>
+
+                            <div class="mb-3">
+                                <p class="small text-muted mb-1">Sucht nach:</p>
+                                <span class="skill-badge">{{ res.requested_skill }}</span>
+                            </div>
+
+                            <a href="#" class="btn btn-outline-dark w-100 btn-sm py-2" style="border-radius: 8px;">
+                                Profil ansehen
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted">Keine Ergebnisse gefunden.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

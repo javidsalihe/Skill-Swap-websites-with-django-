@@ -1,0 +1,198 @@
+{% extends 'adminPanel/layouts/base.html' %}
+{% block header_title %}
+Sprachverwaltung
+{% endblock %}
+
+{% block title %}
+Sprachverwaltung
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css">
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <div class="card-body">
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+
+        <div class="d-flex justify-content-end mb-3">
+            <a href=""
+               data-bs-toggle="modal"
+               data-bs-target="#addLanguageModal">
+                <i class="fa fa-language add-new-record-button"></i>
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Sprach</th>
+                    <th>Sprachcode</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {% for language in languages %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ language.language_name }}</td>
+                    <td>{{ language.language_code | default_if_none:"" }}</td>
+                    <td>
+
+                        <div class="edit-delete-info-masterData-div">
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#editModal{{ language.pk }}">
+                                <i class="fa-solid fa-pen-to-square edit-delete-info-buttons"></i>
+                            </a>
+                            <a href="{% url 'delete_language' language.pk %}"
+                               onclick="return confirm('Möchten Sie dieses Sprache löschen?')">
+                                <i class="fa fa-trash edit-delete-info-buttons" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted">
+                        Keine Daten vorhanden
+                    </td>
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<!-- Add Country Modal -->
+
+<div class="modal fade" id="addLanguageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <form method="POST" action="{% url 'create_language' %}">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Neue Sprache hinzufügen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Sprach</label>
+                        {{ form.language_name }}
+                        {% if form.language_name.errors %}
+                        <div class="text-danger small">{{ form.language_name.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Sprachcode</label>
+                        {{ form.language_code }}
+                        {% if form.language_code.errors %}
+                        <div class="text-danger small">{{ form.language_code.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Abbrechen
+                    </button>
+                    <button type="submit"
+                            class="save-button btn">
+                        Speichern
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<!-- Edit Country Modals -->
+
+{% for language in languages %}
+<div class="modal fade" id="editModal{{ language.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <form method="POST" action="{% url 'update_language' language.pk %}">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Land bearbeiten: {{ language.language_name }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label" for="sprach_name">Sprach</label>
+                        <input type="text"
+                               id="sprach_name"
+                               name="language_name"
+                               class="form-control"
+                               value="{{ language.language_name }}"
+                               required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="language_code">Sprachcode</label>
+                        <input type="text"
+                               id="language_code"
+                               name="language_code"
+                               class="form-control"
+                               value="{{ language.language_code }}">
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Abbrechen
+                    </button>
+                    <button type="submit"
+                            class="save-button btn">
+                        Update speichern
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

@@ -1,0 +1,390 @@
+{% extends 'adminPanel/layouts/base.html' %}
+{% load static %}
+
+{% block title %} Skill-Swap anlegen {% endblock %}
+{% block header_title %} Skill-Swap anlegen {% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"/>
+<style>
+    .new_skill_button {
+        color: rgb(224, 220, 188);
+        background: rgb(35, 60, 47);
+        font-weight: bold;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .save-button {
+        background: rgb(35, 60, 47);
+        color: white;
+    }
+
+    .save-button:hover {
+        background: rgb(45, 75, 60);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% if exchanges %}
+
+        <div class="d-flex justify-content-end mb-3">
+            <a href="javascript:void(0)" class="btn new_skill_button" data-bs-toggle="modal"
+               data-bs-target="#addExchangeModal">
+                <i class="fa fa-plus"></i> Neue skill-Swap anlegen
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                <tr>
+                    <th>Gewünschter Skill</th>
+                    <th>Biete Kompetenz</th>
+                    <th>Bezeichnung</th>
+                    <th>Details</th>
+                    <th>Status</th>
+                    <th>Priorität</th>
+                    <th>Umkreis (km)</th>
+                    <th>Verfügbare Wochentage</th>
+                    <th>Zeitfenster</th>
+                    <th>Zeitaufwand (Minuten)</th>
+                    <th>Ablaufdatum</th>
+                    <th>Aktionen</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for exchange in exchanges %}
+                <tr>
+                    <td>{{ exchange.requested_skill.name }}</td>
+                    <td>{{ exchange.offered_skill.skill_id.name }}</td>
+                    <td>{{ exchange.title }}</td>
+                    <td>{{ exchange.description }}</td>
+                    <td>{{ exchange.get_status_display }}</td>
+                    <td>{{ exchange.get_urgency_level_display }}</td>
+                    <td>{{ exchange.max_distance_km }}</td>
+                    <td>
+                        {% for day in exchange.preferred_days %}
+                        <span class="badge bg-secondary">{{ day }}</span>
+                        {% empty %}
+                        -
+                        {% endfor %}
+                    </td>
+
+                    <td>{{ exchange.get_preferred_time_range_display }}</td>
+                    <td>{{ exchange.estimated_duration_minutes }}</td>
+                    <td>{{ exchange.expires_at }}</td>
+                    <td>
+    <div class="edit-delete-info-masterData-div">
+
+        {% if exchange.status != 'closed' %}
+        <a href="#" data-bs-toggle="modal" data-bs-target="#editExchangeModal{{ exchange.id }}">
+            <i class="fa-solid fa-pen-to-square edit-delete-info-buttons"></i>
+        </a>
+        {% else %}
+        <i class="fa-solid fa-pen-to-square text-muted"></i>
+        {% endif %}
+
+        {% if exchange.status != 'closed' %}
+        <a href="{% url 'delete_exchange_request' exchange.pk %}"
+           onclick="return confirm('Möchten Sie diesen Eintrag wirklich entfernen?')">
+            <i class="fa fa-trash edit-delete-info-buttons"></i>
+        </a>
+        {% else %}
+        <i class="fa-solid fa-trash text-muted"></i>
+        {% endif %}
+
+        <a href="{% url 'skill_swap_details' %}" >
+            <i class="fa fa-info-circle edit-delete-info-buttons"></i>
+        </a>
+    </div>
+</td>
+
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center p-5 border rounded bg-light">
+            <p>Keine Kompetenzen gefunden.</p>
+            <a href="javascript:void(0)" class="btn new_skill_button" data-bs-toggle="modal"
+               data-bs-target="#addExchangeModal">
+                <i class="fas fa-plus"></i> Neue skill-Swap anlegen
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="modal fade" id="addExchangeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'create_exchange_request' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Neue skill-Swap anlegen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+
+
+                    <div class="mb-3">
+                        <label class="form-label">Gewünschter Skill</label>
+                        {{ form.requested_skill }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Biete Kompetenz</label>
+                        {{ form.offered_skill }}
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label class="form-label">Bezeichnung</label>
+                        {{ form.title }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Details</label>
+                        {{ form.description }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Priorität</label>
+                        {{ form.urgency_level }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Zeitfenster</label>
+                        {{ form.preferred_time_range }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Verfügbare Wochentage</label>
+                        {{ form.preferred_days }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Umkreis (KM)</label>
+                        {{ form.max_distance_km }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Zeitaufwand (Minuten)</label>
+                        {{ form.estimated_duration_minutes }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Ablaufdatum</label>
+                        {{ form.expires_at }}
+                    </div>
+
+
+                </div>
+
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Abbrechen
+                    </button>
+                    <button type="submit"
+                            class="save-button btn">
+                        speichern
+                    </button>
+                </div>
+
+
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{% for ex in exchanges %}
+<div class="modal fade" id="editExchangeModal{{ ex.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'update_exchange_request' ex.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">skill-Swap bearbeiten</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+
+
+                    <div class="mb-3">
+                        <label class="form-label" for="requested_skill">Gewünschter Skill</label>
+                        <select name="requested_skill"
+                                class="form-control search_select"
+                                id="requested_skill" required>
+                            {% for skill in skills %}
+                            <option value="{{ skill.pk }}"
+                                    {% if ex.requested_skill.pk == skill.pk %}selected{% endif %}>
+                                {{ skill.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="offered_skill">Biete Kompetenz</label>
+                        <select name="offered_skill"
+                                class="form-control search_select"
+                                id="offered_skill" required>
+                            {% for us in user_skills %}
+                            <option value="{{ us.pk }}"
+                                    {% if ex.offered_skill.pk == us.pk %}selected{% endif %}>
+                                {{ us }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label class="form-label" for="title">Bezeichnung</label>
+                        <input type="text" name="title" id="title" value="{{ ex.title }}" class="form-control">
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label class="form-label" for="description">Details</label>
+                        <textarea name="description" id="description" rows="4" style="resize: none;"
+                                  class="form-control">{{ ex.description }}</textarea>
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label class="form-label" for="urgency_level">Priorität</label>
+                        <select name="urgency_level" id="urgency_level" class="form-control search_select">
+                            {% for value, name in ex.UrgencyLevel.choices %}
+                            <option value="{{ value }}" {% if ex.urgency_level == value %}selected{% endif %}>
+                                {{ name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="preferred_time_range">Zeitfenster</label>
+                        <select name="preferred_time_range" id="preferred_time_range"
+                                class="form-control search_select">
+                            {% for value, name in ex.PreferredTimeRange.choices %}
+                            <option value="{{ value }}" {% if ex.preferred_time_range == value %}selected{% endif %}>
+                                {{ name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label class="form-label" for="day_{{ ex.pk }}_{{ value }}">Verfügbare Wochentage</label>
+                        {% for value, label in ex.PreferredDays.choices %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox"
+                                   name="preferred_days"
+                                   value="{{ value }}"
+                                   id="day_{{ ex.pk }}_{{ value }}"
+                                   {% if value in ex.preferred_days %}checked{% endif %}>
+                            <label class="form-check-label" for="day_{{ ex.pk }}_{{ value }}">
+                                {{ label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label class="form-label" for="max_distance_km">Umkreis (KM)</label>
+                        <input type="text" name="max_distance_km" id="max_distance_km" value="{{ ex.max_distance_km }}"
+                               class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="estimated_duration_minutes">Zeitaufwand (Minuten)</label>
+                        <input type="text" name="estimated_duration_minutes" id="estimated_duration_minutes"
+                               value="{{ ex.estimated_duration_minutes  }}" class="form-control">
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label class="form-label" for="expires_at_{{ ex.pk }}">Ablaufdatum</label>
+                        <input type="date"
+                               name="expires_at"
+                               id="expires_at_{{ ex.pk }}"
+                               class="form-control"
+                               value="{{ ex.expires_at|date:'Y-m-d' }}"
+                               min="{% now 'Y-m-d' %}">
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Abbrechen
+                    </button>
+                    <button type="submit"
+                            class="save-button btn">
+                        bearbeiten
+                    </button>
+                </div>
+
+
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        function initSelect2(modalId) {
+            $('.search_select').each(function () {
+                $(this).select2({
+                    theme: 'bootstrap-5',
+                    dropdownParent: $(modalId),
+                    placeholder: 'Suchen ihre Gewünschte',
+                    width: '100%'
+                });
+            });
+        }
+
+        $('#addExchangeModal').on('shown.bs.modal', function () {
+            initSelect2('#addExchangeModal');
+        });
+    });
+</script>
+{% endblock %}

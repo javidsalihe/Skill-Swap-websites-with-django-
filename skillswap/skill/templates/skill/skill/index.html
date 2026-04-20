@@ -1,0 +1,238 @@
+{% extends 'adminPanel/layouts/base.html' %}
+{% load static %}
+{% block title %}
+fähigkeit
+{% endblock %}
+
+{% block header_title %}
+fähigkeit
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css"
+      integrity="sha512-2bBQCjcnw658Lho4nlXJcc6WkV/UxpE/sAokbXPxQNGqmNdQrWqtw26Ns9kFF/yG792pKR1Sx8/Y1Lf1XN4GKA=="
+      crossorigin="anonymous" referrerpolicy="no-referrer"/>
+
+<style>
+    .new_skill_button {
+
+        color: rgb(224, 220, 188);
+        background: rgb(35, 60, 47);
+
+        font-weight: bold;
+        font-size: 16px;
+
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="card">
+    <div class="card-body">
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="d-flex justify-content-end">
+            <div class="add-new-record-dev">
+                <a href="" class="btn new_skill_button"
+                   data-bs-toggle="modal"
+                   data-bs-target="#addSkillModal">
+                    Neue fähigkeit
+                </a>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Skill Kategorie</th>
+                    <th>name</th>
+                    <th>Leistungsbeschreibung</th>
+                    <th>Aktion</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for skill in skills %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                    {% if skill.skill_category_id %}
+                    {{ skill.skill_category_id.skill_name }}
+                    {% else %}
+                    <span class="text-muted">Keine Kategorie</span>
+                    {% endif %}
+                    </td>
+                    <td>{{ skill.name }}</td>
+                    <td>{{ skill.description }}</td>
+                    <td>
+                        <div class="edit-delete-info-masterData-div">
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#editModal{{ skill.pk }}">
+                                <i class="fa-solid fa-pen-to-square edit-delete-info-buttons"></i>
+                            </a>
+                            <a href="{% url 'delete_skill' skill.pk %}"
+                               onclick="return confirm('Möchten Sie  löschen?')">
+                                <i class="fa fa-trash edit-delete-info-buttons" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- Add Category Modal -->
+<div class="modal fade" id="addSkillModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <form method="POST" action="{% url 'create_skill' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Neue fähigkeit hinzufügen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">Kategoriename</label>
+                        {{ form.skill_category_id }}
+                        {% if form.skill_category_id.errors %}
+                        <div class="text-danger small">{{ form.skill_category_id.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">name</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <div class="text-danger small">{{ form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Beschreibung</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                        <div class="text-danger small">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Abbrechen
+                    </button>
+                    <button type="submit"
+                            class="save-button btn">
+                        Speichern
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<!-- Edit Category Modal -->
+{% for skill in skills %}
+<div class="modal fade" id="editModal{{ skill.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <form method="POST" action="{% url 'update_skill' skill.pk %}">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Kategorie bearbeiten: {{ skill.name }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ skill.pk }}_cat">Skill Kategorie</label>
+                        <select name="skill_category_id" class="form-control" id="{{ skill.pk }}_cat">
+                            <option value="">---------</option>
+                            {% for cat in skill_categories %}
+                                <option value="{{ cat.pk }}"
+                                    {% if skill.skill_category_id.pk == cat.pk %}selected{% endif %}>
+                                    {{ cat.skill_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ skill.pk }}_name">Name</label>
+                        <input type="text"
+                               name="name"
+                               class="form-control"
+                               value="{{ skill.name }}"
+                               id="{{ skill.pk }}_name"
+                               required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ skill.pk }}_description">Beschreibung</label>
+                        <textarea name="description" class="form-control"
+                                  id="{{ skill.pk }}_description"
+                                  rows="3">{{ skill.description }}</textarea>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Abbrechen
+                    </button>
+                    <button type="submit"
+                            class="save-button btn">
+                        Update speichern
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.min.js"
+        integrity="sha512-nKXmKvJyiGQy343jatQlzDprflyB5c+tKCzGP3Uq67v+lmzfnZUi/ZT+fc6ITZfSC5HhaBKUIvr/nTLCV+7F+Q=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{% endblock %}

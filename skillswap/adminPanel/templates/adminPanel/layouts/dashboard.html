@@ -1,0 +1,141 @@
+{% extends 'adminPanel/layouts/base.html' %}
+
+{% block title %} Full Dashboard {% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css">
+<style>
+    .card { border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .card-header { background-color: #f8f9fc; font-weight: bold; color: #4e73df; }
+    canvas { max-height: 280px; }
+</style>
+{% endblock %}
+
+{% block header_title %} Dashboard für {{ user.first_name }} {% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card"><div class="card-header">Geschlecht</div><div class="card-body"><canvas id="genderChart"></canvas></div></div>
+        </div>
+        <div class="col-md-3">
+            <div class="card"><div class="card-header">Sprachen</div><div class="card-body"><canvas id="languageChart"></canvas></div></div>
+        </div>
+        <div class="col-md-6">
+            <div class="card"><div class="card-header">Bezirke (Districts)</div><div class="card-body"><canvas id="districtChart"></canvas></div></div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card"><div class="card-header">Top angebotene Skills</div><div class="card-body"><canvas id="skillsChart"></canvas></div></div>
+        </div>
+        <div class="col-md-6">
+            <div class="card"><div class="card-header">Bewertungen (Ratings)</div><div class="card-body"><canvas id="ratingChart"></canvas></div></div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card"><div class="card-header">Exchange Status</div><div class="card-body"><canvas id="statusChart"></canvas></div></div>
+        </div>
+        <div class="col-md-4">
+            <div class="card"><div class="card-header">Urgency Level</div><div class="card-body"><canvas id="urgencyChart"></canvas></div></div>
+        </div>
+        <div class="col-md-4">
+            <div class="card"><div class="card-header">Bevorzugte Wochentage</div><div class="card-body"><canvas id="daysChart"></canvas></div></div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card"><div class="card-header">Preferred Time Range</div><div class="card-body"><canvas id="timeRangeChart"></canvas></div></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const colors = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796', '#6f42c1'];
+
+    new Chart(document.getElementById('genderChart'), {
+        type: 'pie',
+        data: {
+            labels: {{ gender_data|safe }}.map(d => d.gender || 'N/A'),
+            datasets: [{ data: {{ gender_data|safe }}.map(d => d.count), backgroundColor: colors }]
+        }
+    });
+
+new Chart(document.getElementById('districtChart'), {
+    type: 'bar',
+    data: {
+        labels: {{ district_data|safe }}.map(d => d.address_id__district__district_name || 'Unbekannt'),
+        datasets: [{ label: 'Nutzer', data: {{ district_data|safe }}.map(d => d.count), backgroundColor: '#4e73df' }]
+    }
+});
+
+    new Chart(document.getElementById('languageChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ language_data|safe }}.map(d => d.preferred_language__language_name || 'N/A'),
+            datasets: [{ data: {{ language_data|safe }}.map(d => d.count), backgroundColor: colors }]
+        }
+    });
+
+new Chart(document.getElementById('skillsChart'), {
+    type: 'bar',
+    options: { indexAxis: 'y' },
+    data: {
+
+        labels: {{ offered_skills_data|safe }}.map(d => d.offered_skill__skill_id__name || 'Unbekannt'),
+        datasets: [{ label: 'Angebote', data: {{ offered_skills_data|safe }}.map(d => d.count), backgroundColor: '#1cc88a' }]
+    }
+});
+
+    new Chart(document.getElementById('statusChart'), {
+        type: 'polarArea',
+        data: {
+            labels: {{ exchange_status_data|safe }}.map(d => d.status),
+            datasets: [{ data: {{ exchange_status_data|safe }}.map(d => d.count), backgroundColor: colors }]
+        }
+    });
+
+
+    new Chart(document.getElementById('daysChart'), {
+        type: 'line',
+        data: {
+            labels: {{ days_data|safe }}.map(d => d.day),
+            datasets: [{ label: 'Anfragen', data: {{ days_data|safe }}.map(d => d.count), borderColor: '#f6c23e', fill: false }]
+        }
+    });
+
+    new Chart(document.getElementById('urgencyChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ urgency_data|safe }}.map(d => d.urgency_level),
+            datasets: [{ label: 'Anzahl', data: {{ urgency_data|safe }}.map(d => d.count), backgroundColor: '#e74a3b' }]
+        }
+    });
+
+
+    new Chart(document.getElementById('ratingChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ rating_data|safe }}.map(d => d.score + ' ★'),
+            datasets: [{ label: 'Stimmen', data: {{ rating_data|safe }}.map(d => d.count), backgroundColor: '#36b9cc' }]
+        }
+    });
+
+
+    new Chart(document.getElementById('timeRangeChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ time_data|safe }}.map(d => d.preferred_time_range),
+            datasets: [{ label: 'Beliebtheit', data: {{ time_data|safe }}.map(d => d.count), backgroundColor: '#6f42c1' }]
+        }
+    });
+</script>
+{% endblock %}

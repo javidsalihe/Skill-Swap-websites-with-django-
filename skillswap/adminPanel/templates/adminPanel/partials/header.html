@@ -1,0 +1,21 @@
+<header class="header">
+  <div class="header-left">
+    <button class="hamburger-btn" id="hamburgerBtn">
+      <i class="fas fa-bars"></i>
+    </button>
+    <h1>{% block header_title %}{% endblock %}</h1>
+  </div>
+
+  <div class="header-right">
+    <div class="notifications">
+      <i class="fas fa-bell fa-lg" style="color: var(--primary-color)"></i>
+      <span class="notification-badge">3</span>
+    </div>
+
+      <a href="{% url 'logout' %}" class="logout-btn" id="logoutBtn">
+          <i class="fas fa-sign-out-alt"></i>
+      <span>Abmelden</span>
+      </a>
+
+  </div>
+</header>

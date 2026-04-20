@@ -1,0 +1,113 @@
+{% extends 'adminPanel/layouts/base.html' %}
+{% load static %}
+
+{% block title %} alle Skill-Swaps {% endblock %}
+{% block header_title %} alle Skill-Swaps {% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+<style>
+   th{
+       font-weight: bold;
+   }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <form method="POST">
+        {% csrf_token %}
+        <div class="card shadow border-0 p-4" style="border-radius: 25px;">
+            <div class="section-title">Exchange Full Management (Admin Only)</div>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="info-label">UUID (System)</label>
+                    <input type="text" class="form-control" value="{{ exchange.uuid }}" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label class="info-label">Initiator</label>
+                    <input type="text" class="form-control" value="{{ exchange.initiated_by }}" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label class="info-label">Created At</label>
+                    <input type="text" class="form-control" value="{{ exchange.created_at }}" readonly>
+                </div>
+
+                <div class="col-md-6 mt-4"><div class="section-title">Status & Timing</div></div>
+                <div class="col-md-6 mt-4"></div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        {% for val, label in status_choices %}
+                            <option value="{{ val }}" {% if exchange.status == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Scheduled At</label>
+                    <input type="datetime-local" name="scheduled_at" class="form-control"
+                           value="{{ exchange.scheduled_at|date:'Y-m-d\TH:i' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Actual Duration (Min)</label>
+                    <input type="number" name="actual_duration_minutes" class="form-control" value="{{ exchange.actual_duration_minutes }}">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Location Type</label>
+                    <select name="location_type" class="form-select">
+                        {% for val, label in location_choices %}
+                            <option value="{{ val }}" {% if exchange.location_type == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Meeting Address</label>
+                    <textarea name="meeting_address" class="form-control" rows="1">{{ exchange.meeting_address }}</textarea>
+                </div>
+
+                <div class="col-md-12 mt-4"><div class="section-title">Confirmation Flags</div></div>
+                <div class="col-md-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="done_by_x" {% if exchange.done_by_x %}checked{% endif %}>
+                        <label class="form-check-label">Done by User X</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="done_by_y" {% if exchange.done_by_y %}checked{% endif %}>
+                        <label class="form-check-label">Done by User Y</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="final_agreement_reached" {% if exchange.final_agreement_reached %}checked{% endif %}>
+                        <label class="form-check-label">Final Agreement Reached</label>
+                    </div>
+                </div>
+
+                <div class="col-md-12 mt-4">
+                    <label class="form-label text-danger">Cancellation Reason (If Canceled)</label>
+                    <textarea name="cancellation_reason" class="form-control" rows="2">{{ exchange.cancellation_reason }}</textarea>
+                </div>
+            </div>
+
+            <div class="mt-5 d-flex justify-content-between">
+                <a href="{% url 'manage_all_exchanges' %}" class="btn btn-secondary" style="border-radius: 12px;">Abbrechen</a>
+                <button type="submit" class="btn text-white" style="background-color: rgb(35, 60, 47); border-radius: 12px; padding: 10px 40px;">
+                    Alle Änderungen speichern
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

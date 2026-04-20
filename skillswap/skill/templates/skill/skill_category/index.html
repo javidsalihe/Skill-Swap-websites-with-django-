@@ -1,0 +1,456 @@
+{% extends 'adminPanel/layouts/base.html' %}
+{% load static %}
+{% block title %}
+fähigkeit kategorie
+{% endblock %}
+
+{% block header_title %}
+fähigkeit kategorie
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css"
+      integrity="sha512-2bBQCjcnw658Lho4nlXJcc6WkV/UxpE/sAokbXPxQNGqmNdQrWqtw26Ns9kFF/yG792pKR1Sx8/Y1Lf1XN4GKA=="
+      crossorigin="anonymous" referrerpolicy="no-referrer"/>
+
+<style>
+    .new_skill_button {
+
+        color: rgb(224, 220, 188);
+        background: rgb(35, 60, 47);
+
+        font-weight: bold;
+        font-size: 16px;
+
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Lightbox Modal */
+    .lightbox-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        overflow: auto;
+        animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .lightbox-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .lightbox-img {
+        max-width: 90vw;
+        max-height: 90vh;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        transition: transform 0.3s ease;
+    }
+
+    .lightbox-close {
+        position: absolute;
+        top: 25px;
+        right: 35px;
+        color: #fff;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+        z-index: 10000;
+        background: rgba(0, 0, 0, 0.5);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .lightbox-close:hover {
+        color: #ff4444;
+        transform: rotate(90deg);
+    }
+
+    .lightbox-nav {
+        position: absolute;
+        top: 50%;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        transform: translateY(-50%);
+        padding: 0 20px;
+        z-index: 10000;
+    }
+
+    .lightbox-prev,
+    .lightbox-next {
+        color: white;
+        font-size: 30px;
+        cursor: pointer;
+        background: rgba(0, 0, 0, 0.5);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+    }
+
+    .lightbox-prev:hover,
+    .lightbox-next:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.1);
+    }
+
+    /* Thumbnail image */
+    .thumbnail-img {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        border-radius: 5px;
+    }
+
+    .thumbnail-img:hover {
+        transform: scale(1.05);
+        border-color: #3498db;
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+    }
+
+    /* Link styling */
+    .skill-link {
+        color: #3498db;
+        text-decoration: none;
+        font-weight: 500;
+        padding: 5px 10px;
+        border-radius: 4px;
+        transition: all 0.3s;
+        display: inline-block;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .skill-link:hover {
+        color: #fff;
+        background-color: #3498db;
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+    }
+
+    /* No image/link styling */
+    .no-content {
+        background-color: rgb(175, 169, 111);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        display: inline-block;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .lightbox-img {
+            max-width: 95vw;
+            max-height: 80vh;
+        }
+
+        .lightbox-close {
+            top: 15px;
+            right: 20px;
+            font-size: 30px;
+            width: 40px;
+            height: 40px;
+        }
+
+        .lightbox-prev,
+        .lightbox-next {
+            width: 40px;
+            height: 40px;
+            font-size: 24px;
+        }
+    }
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="card">
+    <div class="card-body">
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="d-flex justify-content-end">
+            <div class="add-new-record-dev">
+                <a href="" class="btn new_skill_button"
+                   data-bs-toggle="modal"
+                   data-bs-target="#addCategoryModal">
+                    Neue fähigkeit Kategorie
+                </a>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Fachkenntnis</th>
+                    <th>Leistungsbeschreibung</th>
+                    <th>Bild</th>
+                    <th>Referenz-Link</th>
+                    <th>Aktion</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for skill_category in skill_categories %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ skill_category.skill_name }}</td>
+                    <td>{{ skill_category.skill_description }}</td>
+                    <td>
+                        {% if skill_category.skill_image_url %}
+                        <img src="{{ skill_category.skill_image_url.url }}"
+                             alt="{{ skill_category.skill_name }}"
+                             class="thumbnail-img"
+                             style="max-width: 100px; max-height: 100px; cursor: zoom-in;"
+                             onclick="openLightbox('{{ skill_category.skill_image_url.url }}', '{{ skill_category.skill_name }}')">
+                        {% else %}
+                        <span class="no-content">Kein Bild</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if skill_category.skill_link_url %}
+                        <a href="{{ skill_category.skill_link_url }}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="skill-link"
+                           title="{{ skill_category.skill_link_url }}">
+                            <i class="fas fa-external-link-alt me-2"></i>
+                            Link öffnen
+                        </a>
+                        {% else %}
+                        <span class="no-content">Keine</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="edit-delete-info-masterData-div">
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#editModal{{ skill_category.pk }}">
+                                <i class="fa-solid fa-pen-to-square edit-delete-info-buttons"></i>
+                            </a>
+                            <a href="{% url 'delete_skill_category' skill_category.pk %}"
+                               onclick="return confirm('Möchten Sie  löschen?')">
+                                <i class="fa fa-trash edit-delete-info-buttons" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <form method="POST" action="{% url 'create_skill_category' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Neue fähigkeit hinzufügen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">Kategoriename</label>
+                        {{ form.skill_name }}
+                        {% if form.skill_name.errors %}
+                        <div class="text-danger small">{{ form.skill_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Beschreibung</label>
+                        {{ form.skill_description }}
+                        {% if form.skill_description.errors %}
+                        <div class="text-danger small">{{ form.skill_description.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Bild hochladen</label>
+                        {{ form.skill_image_url }}
+                        {% if form.skill_image_url.errors %}
+                        <div class="text-danger small">{{ form.skill_image_url.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Link-URL</label>
+                        {{ form.skill_link_url }}
+                        {% if form.skill_link_url.errors %}
+                        <div class="text-danger small">{{ form.skill_link_url.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Abbrechen
+                    </button>
+                    <button type="submit"
+                            class="save-button btn">
+                        Speichern
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Category Modal -->
+{% for skill_category in skill_categories %}
+<div class="modal fade" id="editModal{{ skill_category.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <form method="POST" action="{% url 'update_skill_category' skill_category.pk %}" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Kategorie bearbeiten: {{ skill_category.skill_name }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ skill_category.pk }}_skill_name">Kategoriename</label>
+                        <input type="text"
+                               name="skill_name"
+                               class="form-control"
+                               value="{{ skill_category.skill_name }}"
+                               id="{{ skill_category.pk }}_skill_name"
+                               required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ skill_category.pk }}_skill_description">Beschreibung</label>
+                        <input type="text"
+                               name="skill_description"
+                               class="form-control"
+                               value="{{ skill_category.skill_description }}"
+                               id="{{ skill_category.pk }}_skill_description"
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ skill_category.pk }}_skill_link_url">Link-URL</label>
+                        <input type="text"
+                               name="skill_link_url"
+                               class="form-control"
+                               value="{{ skill_category.skill_link_url }}"
+                               id="{{ skill_category.pk }}_skill_link_url">
+                    </div>
+
+
+                    <div class="d-flex flex-column mb-4">
+                        <label for="{{ skill_category.pk }}_skill_image_url" class="profile-image-wrapper">
+                            <img src="{% if skill_category.skill_image_url %}{{ skill_category.skill_image_url.url }}{% else %}{% static 'images/logo/skillswap.jpg' %}{% endif %}"
+                                 class="profile-img rounded-circle"
+                                 id="preview-img"
+                                 style="width: 150px; height: 150px; object-fit: cover;">
+
+                            <input type="file" id="{{ skill_category.pk }}_skill_image_url" name="skill_image_url"
+                                   class="d-none"
+                                   accept="image/*">
+                        </label>
+                        <small class="text-danger" id="error-profile_image_url"></small>
+                        {% if form.skill_image_url.errors %}
+                        <div class="text-danger small">{{ form.skill_image_url.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Abbrechen
+                    </button>
+                    <button type="submit"
+                            class="save-button btn">
+                        Update speichern
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<div id="lightboxModal" class="lightbox-modal" onclick="this.style.display='none'">
+    <span class="lightbox-close" onclick="document.getElementById('lightboxModal').style.display='none'">&times;</span>
+    <img id="lightboxImage" class="lightbox-img">
+</div>
+
+<script>
+    function openLightbox(imgUrl) {
+        document.getElementById('lightboxImage').src = imgUrl;
+        document.getElementById('lightboxModal').style.display = 'block';
+    }
+</script>
+
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.min.js"
+        integrity="sha512-nKXmKvJyiGQy343jatQlzDprflyB5c+tKCzGP3Uq67v+lmzfnZUi/ZT+fc6ITZfSC5HhaBKUIvr/nTLCV+7F+Q=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{% endblock %}

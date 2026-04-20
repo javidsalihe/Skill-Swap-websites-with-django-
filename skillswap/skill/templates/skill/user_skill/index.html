@@ -1,0 +1,208 @@
+{% extends 'adminPanel/layouts/base.html' %}
+{% load static %}
+
+{% block title %} Nutzerkompetenzen {% endblock %}
+{% block header_title %} Nutzerkompetenzen verwalten {% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css">
+<style>
+    .new_skill_button {
+        color: rgb(224, 220, 188);
+        background: rgb(35, 60, 47);
+        font-weight: bold;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .badge-level {
+        background-color: #e9ecef;
+        color: #495057;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.85em;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="d-flex justify-content-end mb-3">
+            <a href="#" class="btn new_skill_button" data-bs-toggle="modal" data-bs-target="#addUserSkillModal">
+                <i class="fa fa-plus"></i> Neue Nutzerkompetenz
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Benutzer</th>
+                    <th>Kompetenz</th>
+                    <th>Kenntnisstand</th>
+                    <th>Status</th>
+                    <th>Aktion</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for us in user_skills %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><strong>{{ us.user_id.username }}</strong></td>
+                    <td>{{ us.skill_id.name }}</td>
+                    <td>
+                        <span class="badge badge-level">
+                            {{ us.get_proficiency_level_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if us.working_status %}
+                            <span class="text-success"><i class="fa fa-check-circle"></i> Aktiv</span>
+                        {% else %}
+                            <span class="text-muted">Inaktiv</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="edit-delete-info-masterData-div">
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#editUserSkillModal{{ us.pk }}">
+                                <i class="fa-solid fa-pen-to-square edit-delete-info-buttons"></i>
+                            </a>
+                            <a href="{% url 'delete_user_skill' us.pk %}" onclick="return confirm('Möchten Sie diesen Eintrag wirklich entfernen?')">
+                                <i class="fa fa-trash edit-delete-info-buttons"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">Keine Nutzerkompetenzen gefunden.</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addUserSkillModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'create_user_skill' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Nutzerkompetenz hinzufügen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Benutzer auswählen</label>
+                        {{ form.user_id }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kompetenz auswählen</label>
+                        {{ form.skill_id }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kenntnisstand</label>
+                        {{ form.proficiency_level }}
+                    </div>
+                    <div class="form-check mb-3">
+                        {{ form.working_status }}
+                        <label class="form-check-label" for="{{ form.working_status.id_for_label }}">Aktiv / In Anwendung</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                    <button type="submit" class="btn btn-success">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% for us in user_skills %}
+<div class="modal fade" id="editUserSkillModal{{ us.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'update_user_skill' us.pk %}">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Nutzerkompetenz bearbeiten</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Benutzer</label>
+                        <select name="user_id" class="form-control" required>
+                            {% for user in users %}
+                                <option value="{{ user.id }}" {% if us.user_id.id == user.id %}selected{% endif %}>
+                                    {{ user.username }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Kompetenz</label>
+                        <select name="skill_id" class="form-control" required>
+                            {% for skill in skills %}
+                                <option value="{{ skill.pk }}" {% if us.skill_id.pk == skill.pk %}selected{% endif %}>
+                                    {{ skill.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Kenntnisstand</label>
+                        <select name="proficiency_level" class="form-control">
+                            {% for val, label in us.PROFICIENCY_LEVELS %}
+                                <option value="{{ val }}" {% if us.proficiency_level == val %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" name="working_status" class="form-check-input" id="ws{{ us.pk }}" {% if us.working_status %}checked{% endif %}>
+                        <label class="form-check-label" for="ws{{ us.pk }}">
+                            Aktiv / In Anwendung
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Abbrechen
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Änderungen speichern
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

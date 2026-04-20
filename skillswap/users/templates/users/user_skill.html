@@ -1,0 +1,540 @@
+{% extends 'adminPanel/layouts/base.html' %}
+{% load static %}
+
+{% block title %} Kompetenzen {% endblock %}
+{% block header_title %} Kompetenzen {% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"/>
+<style>
+    .new_skill_button {
+        color: rgb(224, 220, 188);
+        background: rgb(35, 60, 47);
+        font-weight: bold;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .save-button {
+        background: rgb(35, 60, 47);
+        color: white;
+    }
+
+    .save-button:hover {
+        background: rgb(45, 75, 60);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% if user_skills %}
+
+        <div class="d-flex justify-content-end mb-3">
+            <a href="javascript:void(0)" class="btn new_skill_button" data-bs-toggle="modal"
+               data-bs-target="#addUserSkillModal">
+                <i class="fa fa-plus"></i> Neue Nutzerkompetenz
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                <tr>
+                    <th>Kompetenz</th>
+                    <th>Kenntnisstand</th>
+                    <th>Status</th>
+                    <th>Aktionen</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for skill in user_skills %}
+                <tr>
+                    <td>{{ skill.skill_id.name }}</td>
+                    <td>{{ skill.get_proficiency_level_display }}</td>
+                    <td>{{ skill.working_status|yesno:"Aktiv,Inaktiv" }}</td>
+                    <td>
+                        <div class="edit-delete-info-masterData-div">
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#editUserSkillModal{{ skill.pk }}">
+                                <i class="fa-solid fa-pen-to-square edit-delete-info-buttons"></i>
+                            </a>
+                            <a href="{% url 'user_skill_delete' skill.pk %}"
+                               onclick="return confirm('Möchten Sie diesen Eintrag wirklich entfernen?')">
+                                <i class="fa fa-trash edit-delete-info-buttons"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center p-5 border rounded bg-light">
+            <p>Keine Kompetenzen gefunden.</p>
+            <a href="javascript:void(0)" class="btn new_skill_button" data-bs-toggle="modal"
+               data-bs-target="#addUserSkillModal">
+                <i class="fas fa-plus"></i> Neue Kompetenz hinzufügen
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="modal fade" id="addUserSkillModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'user_skill_create' %}">
+                {% csrf_token %}
+
+                {% if request.user.is_superuser %}
+                <div class="mb-3">
+                    <label class="form-label">Benutzer auswählen (Admin-Modus)</label>
+                    {{ form.user_id }}
+                </div>
+                {% endif %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Nutzerkompetenz hinzufügen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Kategorie auswählen</label>
+                        <select name="category" id="skill_category_id" class="form-select search_select">
+                            <option value="">Suche Kategorie...</option>
+                            <option value="add_new_category"> + Neu Kategorie hinzufügen</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.skill_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Kompetenz</label>
+                        <select id="skill_id" name="skill_id" class="form-select search_select">
+                            <option value="">Bitte zuerst Kategorie wählen</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Kenntnisstand</label>
+                        {{ form.proficiency_level }}
+                    </div>
+
+                    <div class="form-check mb-3">
+                        {{ form.working_status }}
+                        <label class="form-check-label">Aktiv / In Anwendung</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="save-button btn">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addNewCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="ajaxCreateCategoryForm" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-header"><h5>Neue Kategorie erstellen</h5></div>
+                <div class="modal-body">
+                    {{ category_form.as_p }}
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="save-button btn">Speichern & Weiter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addNewSkillModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="ajaxCreateSkillForm">
+                {% csrf_token %}
+                <div class="modal-header"><h5>Neue Kompetenz hinzufügen</h5></div>
+                <div class="modal-body">
+                    <input type="hidden" name="skill_category_id" id="hidden_category_id">
+                    <div class="mb-3">
+                        <label class="form-label">Name der Kompetenz</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Beschreibung (Optional)</label>
+                        <textarea name="description" class="form-control"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="save-button btn">Skill Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% for us in user_skills %}
+<div class="modal fade" id="editUserSkillModal{{ us.pk }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <form method="POST" action="{% url 'user_skill_update' us.pk %}">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Nutzerkompetenz bearbeiten</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <!-- CATEGORY -->
+                    <div class="mb-3">
+                        <label class="form-label">Kategorie</label>
+                        <select name="category_id"
+                                class="form-control category-select"
+                                data-skill-select="skill-select-{{ us.pk }}">
+                            {% for cat in categories %}
+                                <option value="{{ cat.pk }}"
+                                    {% if us.skill_id.skill_category_id.pk == cat.pk %}selected{% endif %}>
+                                    {{ cat.skill_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- SKILL -->
+                    <div class="mb-3">
+                        <label class="form-label">Kompetenz</label>
+                        <select name="skill_id"
+                                id="skill-select-{{ us.pk }}"
+                                class="form-control"
+                                required>
+
+                            {% for skill in skills %}
+                                {% if skill.skill_category_id == us.skill_id.skill_category_id %}
+                                    <option value="{{ skill.pk }}"
+                                        {% if skill.pk == us.skill_id.pk %}selected{% endif %}>
+                                        {{ skill.name }}
+                                    </option>
+                                {% endif %}
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+                    <!-- LEVEL -->
+                    <div class="mb-3">
+                        <label class="form-label">Kenntnisstand</label>
+                        <select name="proficiency_level" class="form-control">
+                            {% for val, label in us.PROFICIENCY_LEVELS %}
+                                <option value="{{ val }}"
+                                    {% if us.proficiency_level == val %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- STATUS -->
+                    <div class="form-check mb-3">
+                        <input type="checkbox"
+                               name="working_status"
+                               class="form-check-input"
+                               {% if us.working_status %}checked{% endif %}>
+                        <label class="form-check-label">
+                            Aktiv / In Anwendung
+                        </label>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer d-flex gap-2">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Abbrechen
+                    </button>
+                    <button type="submit" class="btn save-button">
+                        Speichern
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+
+
+<!--{% for us in user_skills %}-->
+<!--<div class="modal fade" id="editUserSkillModal{{ us.pk }}" tabindex="-1" aria-hidden="true">-->
+<!--    <div class="modal-dialog modal-dialog-centered">-->
+<!--        <div class="modal-content">-->
+<!--            <form method="POST" action="{% url 'user_skill_update' us.pk %}">-->
+<!--                {% csrf_token %}-->
+
+<!--                <div class="modal-header">-->
+<!--                    <h5 class="modal-title">Nutzerkompetenz bearbeiten</h5>-->
+<!--                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>-->
+<!--                </div>-->
+
+<!--                <div class="modal-body">-->
+
+<!--                    {% if request.user.is_superuser %}-->
+<!--                <div class="mb-3">-->
+<!--                    <label class="form-label">Benutzer auswählen (Admin-Modus)</label>-->
+<!--                    {{ form.user_id }}-->
+<!--                </div>-->
+<!--                {% endif %}-->
+
+
+<!--&lt;!&ndash;                    <div class="mb-3">&ndash;&gt;-->
+<!--&lt;!&ndash;                        <label class="form-label">kategory</label>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <select name="skill_id" class="form-control" required>&ndash;&gt;-->
+<!--&lt;!&ndash;                            {% for cat in categories %}&ndash;&gt;-->
+<!--&lt;!&ndash;                                <option value="{{ cat.pk }}" {% if us.skill_category_id.pk == cat.pk %}selected{% endif %}>&ndash;&gt;-->
+<!--&lt;!&ndash;                                    {{ cat.skill_name }}&ndash;&gt;-->
+<!--&lt;!&ndash;                                </option>&ndash;&gt;-->
+<!--&lt;!&ndash;                            {% endfor %}&ndash;&gt;-->
+<!--&lt;!&ndash;                        </select>&ndash;&gt;-->
+<!--&lt;!&ndash;                    </div>&ndash;&gt;-->
+
+<!--                    <div class="mb-3">-->
+<!--    <label class="form-label">Kategorie</label>-->
+<!--    <select name="category_id" class="form-control">-->
+<!--        {% for cat in categories %}-->
+<!--            <option value="{{ cat.pk }}"-->
+<!--                {% if us.skill_id.skill_category_id.pk == cat.pk %}selected{% endif %}>-->
+<!--                {{ cat.skill_name }}-->
+<!--            </option>-->
+<!--        {% endfor %}-->
+<!--    </select>-->
+<!--</div>-->
+
+
+<!--                    <div class="mb-3">-->
+<!--                        <label class="form-label">Kompetenz</label>-->
+<!--                        <select name="skill_id" class="form-control" required>-->
+<!--                            {% for skill in skills %}-->
+<!--                                <option value="{{ skill.pk }}" {% if us.skill_id.pk == skill.pk %}selected{% endif %}>-->
+<!--                                    {{ skill.name }}-->
+<!--                                </option>-->
+<!--                            {% endfor %}-->
+<!--                        </select>-->
+<!--                    </div>-->
+
+<!--                    <div class="mb-3">-->
+<!--                        <label class="form-label">Kenntnisstand</label>-->
+<!--                        <select name="proficiency_level" class="form-control">-->
+<!--                            {% for val, label in us.PROFICIENCY_LEVELS %}-->
+<!--                                <option value="{{ val }}" {% if us.proficiency_level == val %}selected{% endif %}>-->
+<!--                                    {{ label }}-->
+<!--                                </option>-->
+<!--                            {% endfor %}-->
+<!--                        </select>-->
+<!--                    </div>-->
+
+<!--                    <div class="form-check mb-3">-->
+<!--                        <input type="checkbox" name="working_status" class="form-check-input" id="ws{{ us.pk }}" {% if us.working_status %}checked{% endif %}>-->
+<!--                        <label class="form-check-label" for="ws{{ us.pk }}">-->
+<!--                            Aktiv / In Anwendung-->
+<!--                        </label>-->
+<!--                    </div>-->
+
+
+<!--                </div>-->
+
+<!--                 <div class="modal-footer">-->
+
+<!--                    <button type="button"-->
+<!--                            class="btn btn-secondary"-->
+<!--                            data-bs-dismiss="modal">-->
+<!--                        Abbrechen-->
+<!--                    </button>-->
+
+<!--                    <button type="submit"-->
+<!--                            class="save-button btn">-->
+<!--                        Speichern-->
+<!--                    </button>-->
+
+<!--                </div>-->
+
+<!--            </form>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+<!--{% endfor %}-->
+
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    document.querySelectorAll('.category-select').forEach(select => {
+
+        select.addEventListener('change', function () {
+
+            const categoryId = this.value;
+            const skillSelectId = this.dataset.skillSelect;
+            const skillSelect = document.getElementById(skillSelectId);
+
+            skillSelect.innerHTML = '<option>Loading...</option>';
+
+            fetch("{% url 'skills_by_category' %}?category_id=" + categoryId)
+                .then(res => res.json())
+                .then(data => {
+                    skillSelect.innerHTML = '<option value="">-- Skill auswählen --</option>';
+
+                    data.forEach(skill => {
+                        const option = document.createElement('option');
+                        option.value = skill.id;
+                        option.textContent = skill.name;
+                        skillSelect.appendChild(option);
+                    });
+                })
+                .catch(() => {
+                    skillSelect.innerHTML = '<option>Error</option>';
+                });
+        });
+
+    });
+
+});
+</script>
+
+<script>
+    $(document).ready(function () {
+        // --- 1. Select2 Initialisierung ---
+        function initSelect2() {
+            $('.search_select').select2({
+                theme: 'bootstrap-5',
+                dropdownParent: $('#addUserSkillModal'),
+                placeholder: 'Suchen...',
+                templateResult: formatOption
+            });
+        }
+
+        initSelect2();
+
+        function formatOption(state) {
+            if (!state.id) return state.text;
+            if (state.id === 'add_new_category' || state.id === 'add_new_skill') {
+                return $('<span style="color: rgb(35, 60, 47); font-weight: bold;"><i class="fas fa-plus-circle me-2"></i>' + state.text + '</span>');
+            }
+            return state.text;
+        }
+
+        // --- 2. Event: Kategorie Auswahl ---
+        $('#skill_category_id').on('change', function () {
+            let catId = $(this).val();
+
+            if (catId === 'add_new_category') {
+                $('#addUserSkillModal').modal('hide');
+                $('#addNewCategoryModal').modal('show');
+                $(this).val(null).trigger('change.select2');
+                return;
+            }
+
+            if (catId) {
+                $('#skill_id').html('<option>Laden...</option>');
+                $.get("{% url 'load_skills' %}", {category_id: catId}, function (data) {
+                    let options = '<option value="">Kompetenz auswählen</option>';
+                    options += '<option value="add_new_skill"> + Neue Kompetenz hinzufügen</option>';
+                    data.forEach(function (skill) {
+                        options += `<option value="${skill.id}">${skill.name}</option>`;
+                    });
+                    $('#skill_id').html(options).trigger('change');
+                });
+            }
+        });
+
+        // --- 3. Event: Skill Auswahl (Trigger Modal) ---
+        $('#skill_id').on('change', function () {
+            let skillId = $(this).val();
+            if (skillId === 'add_new_skill') {
+                let currentCat = $('#skill_category_id').val();
+                if (currentCat) {
+                    $('#hidden_category_id').val(currentCat);
+                    $('#addUserSkillModal').modal('hide');
+                    $('#addNewSkillModal').modal('show');
+                    $(this).val(null).trigger('change.select2');
+                } else {
+                    alert("Bitte wählen Sie zuerst eine Kategorie!");
+                    $(this).val(null).trigger('change.select2');
+                }
+            }
+        });
+
+        // --- 4. AJAX: Kategorie Speichern ---
+        $('#ajaxCreateCategoryForm').on('submit', function (e) {
+            e.preventDefault();
+            let formData = new FormData(this);
+            $.ajax({
+                url: "{% url 'create_user_skill_category' %}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        // افزودن به لیست و انتخاب آن
+                        let newOption = new Option(response.name, response.id, true, true);
+                        $('#skill_category_id').append(newOption).trigger('change');
+
+                        // آماده‌سازی برای سکیل جدید
+                        $('#hidden_category_id').val(response.id);
+                        $('#addNewCategoryModal').modal('hide');
+                        $('#addNewSkillModal').modal('show');
+                        $('#ajaxCreateCategoryForm')[0].reset();
+                    }
+                }
+            });
+        });
+
+        // --- 5. AJAX: Skill Speichern ---
+        $('#ajaxCreateSkillForm').on('submit', function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: "{% url 'ajax_create_skill' %}",
+                type: "POST",
+                data: $(this).serialize(),
+                success: function (response) {
+                    if (response.success) {
+                        let newSkillOption = new Option(response.name, response.id, true, true);
+                        $('#skill_id').append(newSkillOption).trigger('change');
+
+                        $('#addNewSkillModal').modal('hide');
+                        $('#addUserSkillModal').modal('show');
+                        $('#ajaxCreateSkillForm')[0].reset();
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

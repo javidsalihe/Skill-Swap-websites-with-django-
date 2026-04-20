@@ -1,0 +1,70 @@
+{% extends 'adminPanel/layouts/base.html' %}
+{% load static %}
+
+{% block title %} Meine Skill-Swaps {% endblock %}
+{% block header_title %} Meine Skill-Swaps {% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+<style>
+   th{
+       font-weight: bold;
+   }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-6">
+    <div class="card shadow-lg" style="border-radius: 20px; border: none;">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered">
+                    <thead>
+                        <tr >
+                            <th>Partner</th>
+                            <th>Mein Skill</th>
+                            <th>Partner Skill</th>
+                            <th>Status</th>
+                            <th>Datum</th>
+                            <th>Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ex in exchanges %}
+                        <tr style="cursor: pointer; vertical-align: middle;">
+                            <td>
+                                <strong>{% if ex.user_x == user %}{{ ex.user_y }}{% else %}{{ ex.user_x }}{% endif %}</strong>
+                            </td>
+                            <td>{% if ex.user_x == user %}{{ ex.skill_from_x_to_y }}{% else %}{{ ex.skill_from_y_to_x }}{% endif %}</td>
+                            <td>{% if ex.user_x == user %}{{ ex.skill_from_y_to_x }}{% else %}{{ ex.skill_from_x_to_y }}{% endif %}</td>
+                            <td>
+                                <span class="badge rounded-pill {% if ex.status == 'completed' %}bg-success{% elif ex.status == 'pending' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                    {{ ex.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ ex.created_at|date:"d.m.Y" }}</td>
+                            <td>
+                                <a href="?id={{ ex.uuid }}" class="btn btn-sm" style="background-color: rgb(35, 60, 47); color: white; border-radius: 10px;">
+                                    Details
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">Keine Exchanges gefunden.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

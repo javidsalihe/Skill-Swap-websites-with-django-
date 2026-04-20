@@ -1,0 +1,100 @@
+{% extends 'adminPanel/layouts/base.html' %}
+{% load static %}
+
+{% block header_title %}Benutzerdetails: {{ user.username }}{% endblock %}
+{% block title %}Profil von {{ user.username }}{% endblock %}
+
+{% block styles %}
+<style>
+    .info-label { font-weight: bold; color: #555; width: 150px; display: inline-block; }
+    .profile-header-img { width: 120px; height: 120px; object-fit: cover; border: 3px solid #eee; }
+    .card { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); margin-bottom: 1.5rem; }
+    .border-bottom { border-bottom: 1px solid #dee2e6 !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Benutzerprofil</h2>
+        <a href="{% url 'edit_form' user.id %}" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Bearbeiten
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-center p-3">
+                <img src="{% if user.profile_image_url %}{{ user.profile_image_url.url }}{% else %}{% static 'images/logo/skillswap.jpg' %}{% endif %}"
+                     class="rounded-circle mx-auto profile-header-img" alt="Avatar">
+                <h4 class="mt-3">{{ user.first_name }} {{ user.last_name }}</h4>
+                <p class="text-muted">@{{ user.username }}</p>
+                <hr>
+                <div class="text-start">
+                    <p><span class="info-label">Aktiv:</span>
+                        {% if user.is_active %}<span class="badge bg-success">Ja</span>{% else %}<span class="badge bg-danger">Nein</span>{% endif %}
+                    </p>
+                    <p><span class="info-label">Mitarbeiter:</span> {{ user.is_staff|yesno:"Ja,Nein" }}</p>
+                    <p><span class="info-label">Superuser:</span> {{ user.is_superuser|yesno:"Ja,Nein" }}</p>
+                </div>
+            </div>
+
+            <div class="card p-3">
+                <h5>Systeminformationen</h5>
+                <p class="mb-1"><small class="info-label">Registriert am:</small></p>
+                <p class="text-muted">{{ user.date_joined|date:"d.m.Y H:i" }}</p>
+
+                <p class="mb-1"><small class="info-label">Letzter Login:</small></p>
+                <p class="text-muted">{{ user.last_login|date:"d.m.Y H:i"|default:"Nie eingeloggt" }}</p>
+
+                <p class="mb-1"><small class="info-label">Zuletzt aktualisiert:</small></p>
+                <p class="text-muted">{{ user.updated_at|date:"d.m.Y H:i" }}</p>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card p-4">
+                <h5 class="border-bottom pb-2 mb-3 text-primary">Kontaktinformationen</h5>
+                <p><span class="info-label">Email:</span> {{ user.email }}</p>
+                <p><span class="info-label">Telefon:</span> {{ user.phone|default:"-" }}</p>
+                <p><span class="info-label">Sprache:</span> {{ user.preferred_language.language_name|default:"-" }}</p>
+                <p><span class="info-label">Benachrichtigung:</span> {{ user.notifications_via|capfirst|default:"-" }}</p>
+            </div>
+
+            <div class="card p-4">
+                <h5 class="border-bottom pb-2 mb-3 text-primary">Adresse & Standort</h5>
+                <p><span class="info-label">Straße:</span>
+                    {{ user.address_id.street_name|default:"-" }} {{ user.address_id.street_number|default:"" }}
+                </p>
+
+                <p><span class="info-label">Postleitzahl:</span>
+                    {{ user.address_id.postal_code|default:"-" }}
+                </p>
+
+                <p><span class="info-label">Land:</span>
+                    {{ location.city.country.country_name|default:"-" }}
+                </p>
+
+                <p><span class="info-label">Stadt:</span>
+                    {{ location.city.city_name|default:"-" }}
+                </p>
+
+                <p><span class="info-label">Bezirk:</span>
+                    {{ location.district_name|default:"-" }}
+                </p>
+
+                <div class="row mt-3 pt-3 border-top text-muted small">
+                    <div class="col-4 border-end"><strong>Lat:&nbsp;&nbsp;</strong>{{ user.address_id.latitude|default:"N/A" }}</div>
+                    <div class="col-4 border-end"><strong>Long:&nbsp;&nbsp;</strong>{{ user.address_id.longitude|default:"N/A" }}</div>
+                    <div class="col-4"><strong>Timezone:&nbsp;&nbsp;</strong>{{ user.address_id.timezone|default:"N/A" }}</div>
+                </div>
+            </div>
+
+            <div class="card p-4">
+                <h5 class="border-bottom pb-2 mb-3 text-primary">Biographie</h5>
+                <p class="text-secondary">{{ user.bio|linebreaks|default:"Keine Biographie verfügbar." }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

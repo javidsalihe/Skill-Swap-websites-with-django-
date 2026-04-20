@@ -1,0 +1,161 @@
+{% load static %}
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <img
+                src="{% if user.profile_image_url %}{{ user.profile_image_url.url }}{% else %}{% static 'images/logo/skillswap.jpg' %}{% endif %}"
+                alt="Profilbild"
+                class="user-profile-img"
+        />
+        <div class="user-info">
+            <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+            <p></p>
+        </div>
+    </div>
+
+    <nav class="sidebar-menu">
+
+
+        {% if not request.user.is_superuser %}
+
+
+        <a href="{% url 'user_dashboard' %}"
+           class="menu-item {% if request.resolver_match.url_name == 'user_dashboard' %}active{% endif %}">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <a href="{% url 'core:searching_skills' %}"
+           class="menu-item {% if request.resolver_match.url_name == 'searching_skills' %}active{% endif %}">
+            <i class="fas fa-search"></i>
+            <span>Skills suchen</span>
+        </a>
+
+        <a href="{% url 'user_skill' %}"
+           class="menu-item {% if request.resolver_match.url_name == 'user_skill' %}active{% endif %}">
+            <i class="fas fa-cogs"></i>
+            <span>Deine Fähigkeit</span>
+        </a>
+
+        <a href="{% url 'exchanges' %}"
+           class="menu-item {% if request.resolver_match.url_name == 'exchanges' %}active{% endif %}">
+            <i class="fas fa-search"></i>
+            <span>Suchfähigkeit Registered</span>
+        </a>
+
+
+        <a href="{% url 'swap_skill' %}"
+           class="menu-item {% if request.resolver_match.url_name == 'swap_skill' %}active{% endif %}">
+            <i class="fas fa-exchange-alt"></i>
+            <span class="d-flex align-items-center justify-content-between w-100">
+        Dein aktuell swap
+        {% if unread_requests_count > 0 %}
+            <span class="notification-badge-circle">
+                {{ unread_requests_count }}
+            </span>
+        {% endif %}
+    </span>
+        </a>
+
+
+        <a href="{% url 'skill_swap_details' %}"
+           class="menu-item {% if request.resolver_match.url_name == 'skill_swap_details' %}active{% endif %}">
+            <i class="fas fa-list"></i>
+            <span>Swap skill liste</span>
+        </a>
+
+
+        {% endif %}
+
+
+        {% if request.user.is_superuser %}
+
+        <a href="{% url 'adminPanel:dashboard' %}"
+           class="menu-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <a href="{% url 'skill_category_list' %}"
+           class="menu-item {% if request.resolver_match.url_name == 'skill_category_list' %}active{% endif %}">
+            <i class="fa fa-cogs"></i>
+            <span>Fachkenntnis kategorie</span>
+        </a>
+
+        <a href="{% url 'skill_list' %}"
+           class="menu-item {% if request.resolver_match.url_name == 'skill_list' %}active{% endif %}">
+            <i class="fa fa-cogs"></i>
+            <span>Fachkenntnis</span>
+        </a>
+
+
+        <a href="{% url 'user_skill_list' %}"
+           class="menu-item {% if request.resolver_match.url_name == 'user_skill_list' %}active{% endif %}">
+            <i class="fa fa-user-md" aria-hidden="true"></i>
+            <span>Benutzerfertigkeit</span>
+        </a>
+
+
+        <a href="{% url 'users_list' %}"
+           class="menu-item {% if request.resolver_match.url_name == 'users_list' %}active{% endif %}">
+            <i class="fa-solid fa-users"></i>
+            <span>Benutzer</span>
+        </a>
+
+
+        <a href="{% url 'manage_ratings' %}"
+           class="menu-item {% if request.resolver_match.url_name == 'manage_ratings' %}active{% endif %}">
+            <i class="fa-solid fa-star"></i>
+            <span>Bewertungsliste</span>
+        </a>
+
+
+        <a href="{% url 'manage_all_exchanges' %}"
+           class="menu-item {% if request.resolver_match.url_name == 'manage_all_exchanges' %}active{% endif %}">
+            <i class="fa-solid fa-hands-holding-circle"></i>
+            <span>Alle Swaps verwalten</span>
+        </a>
+
+
+        <a href="{% url 'countries_list' %}"
+           class="menu-item {% if request.resolver_match.url_name == 'countries_list' %}active{% endif %}">
+            <i class="fa fa-globe" aria-hidden="true"></i>
+            <span>Länder</span>
+        </a>
+
+        <a href="{% url 'cities_list' %}"
+           class="menu-item {% if request.resolver_match.url_name == 'cities_list' %}active{% endif %}">
+            <i class="fa fa-globe" aria-hidden="true"></i>
+            <span>Städte</span>
+        </a>
+
+        <a href="{% url 'districts_list' %}"
+           class="menu-item {% if request.resolver_match.url_name == 'districts_list' %}active{% endif %}">
+            <i class="fa fa-globe" aria-hidden="true"></i>
+            <span>Bezirke</span>
+        </a>
+
+        <a href="{% url 'languages_list' %}"
+           class="menu-item {% if request.resolver_match.url_name == 'languages_list' %}active{% endif %}">
+            <i class="fa fa-language" aria-hidden="true"></i>
+            <span>Sprachen</span>
+        </a>
+
+
+        <a href="{% url 'system_logs_list' %}"
+           class="menu-item {% if request.resolver_match.url_name == 'system_logs_list' %}active{% endif %}">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>System-Protokolle</span>
+        </a>
+
+        {% endif %}
+
+
+        <a href="{% url 'profile' user.id %}"
+           class="menu-item {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+            <i class="fas fa-user"></i>
+            <span>Profil</span>
+        </a>
+
+
+    </nav>
+</aside>

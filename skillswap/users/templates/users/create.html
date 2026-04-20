@@ -1,0 +1,237 @@
+{% extends 'adminPanel/layouts/base.html' %}
+{% load static %}
+{% block header_title %}
+Benutzer Formulare
+{% endblock %}
+
+{% block title %}
+Benutzer Formulare
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css"
+      integrity="sha512-2bBQCjcnw658Lho4nlXJcc6WkV/UxpE/sAokbXPxQNGqmNdQrWqtw26Ns9kFF/yG792pKR1Sx8/Y1Lf1XN4GKA=="
+      crossorigin="anonymous" referrerpolicy="no-referrer"/>
+<link rel="stylesheet" href="{% static 'css/profile_img.css' %}">
+<style>
+
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
+             role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="col-md-8 col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <form action="{% url 'create_user' %}" method="POST" enctype="multipart/form-data" id="userForm">
+                        {% csrf_token %}
+
+                        <input type="hidden" name="longitude" id="longitude_id">
+                        <input type="hidden" name="latitude" id="latitude_id">
+                        <input type="hidden" name="timezone" id="timezone_id">
+
+                        <div class="d-flex flex-column  mb-4">
+                            <label for="profile_image_url" class="profile-image-wrapper">
+                                <img src="{% static 'images/logo/skillswap.jpg' %}" alt="Profile Image"
+                                     class="profile-img rounded-circle" id="preview-img">
+                                <input type="file" id="profile_image_url" name="profile_image_url" class="d-none"
+                                       accept="image/*">
+                            </label>
+                            <small class="text-danger" id="error-profile_image_url"></small>
+                            {% if form.profile_image_url.errors %}
+                            <div class="text-danger small">{{ form.profile_image_url.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="user_name" class="form-label">Benutzername</label>
+                            <input type="text" name="username" class="form-control" id="user_name">
+                            <div class="invalid-feedback" id="error-user_name"></div>
+                            {% if form.username.errors %}
+                            <div class="text-danger small">{{ form.username.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="first_name" class="form-label">Vorname</label>
+                            <input type="text" name="first_name" class="form-control" id="first_name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="last_name" class="form-label">Nachname</label>
+                            <input type="text" name="last_name" class="form-control" id="last_name">
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label for="gender" class="form-label">Geschlecht</label>
+                            <select name="gender" id="gender" class="form-control">
+                                <option value="">Wählen Sie Ihr Geschlecht</option>
+                                <option value="female">Female</option>
+                                <option value="male">Male</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Adresse</label>
+                            <input type="email" name="email" class="form-control" id="email"
+                                   value="{{ form.email.value|default:'' }}">
+                            <div class="invalid-feedback" id="error-email"></div>
+                            {% if form.email.errors %}
+                            <div class="text-danger small">{{ form.email.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Telefon Nummer</label>
+                            <input type="tel" name="phone" class="form-control" id="phone" placeholder="+49123456789"
+                                   pattern="^\+?\d+$"
+                                   inputmode="numeric">
+                        </div>
+                        <div class="mb-3">
+                            <label for="date_of_birth" class="form-label">Geburtsdatum</label>
+                            <input type="date" name="date_of_birth" class="form-control" id="date_of_birth"
+                                   onkeydown="return false;">
+                        </div>
+                        <div class="mb-3">
+                            <label for="street_name" class="form-label">Straße</label>
+                            <input type="text" name="street_name" class="form-control" id="street_name">
+                            {% if form.street_name.errors %}
+                            <div class="text-danger small">{{ form.street_name.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="street_number" class="form-label">Straße Nummer</label>
+                            <input type="number" name="street_number" class="form-control" id="street_number">
+                            {% if form.street_number.errors %}
+                            <div class="text-danger small">{{ form.street_number.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="postal_code" class="form-label">Postleitzahl</label>
+                            <input type="number" name="postal_code" class="form-control" id="postal_code">
+                            {% if form.postal_code.errors %}
+                            <div class="text-danger small">{{ form.postal_code.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="country_id" class="form-label">Land</label>
+                            <select id="country_id" name="country_id" class="form-select">
+                                <option value="">Land auswählen</option>
+                                {% for country in countries %}
+                                <option value="{{ country.id }}">{{ country.country_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="city_id" class="form-label">Stadt</label>
+                            <select id="city_id" name="city_id" class="form-select">
+                                <option value="">Stadt auswählen</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="district_id" class="form-label">Bezirk</label>
+                            <select id="district_id" name="district_id" class="form-select">
+                                <option value="">Bezirk auswählen</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="language_id" class="form-label">Sprache</label>
+                            <select id="language_id" name="language_id" class="form-select">
+                                <option value="">Sprache auswählen</option>
+                                {% for language in languages %}
+                                <option value="{{ language.id }}">{{ language.language_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="notifications_via" class="form-label">Notification via </label>
+                            <select id="notifications_via" name="notifications_via" class="form-select">
+                                <option value="">Notifications via ?</option>
+                                <option value="email">Email</option>
+                                <option value="sms" disabled>SMS</option>
+                                <option value="telefon" disabled>telefon</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bio" class="form-label">Schreiben Sie über sich selbst</label>
+                            <textarea name="bio" class="form-control" id="bio" rows="4"
+                                      style="resize: none;"></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" name="is_active" class="form-check-input" id="is_active">
+                            <label class="form-check-label" for="is_active">Ist Aktiv?</label>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" name="is_staff" class="form-check-input" id="is_staff">
+                            <label class="form-check-label" for="is_staff">Ist Benutzer ? </label>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" name="is_superuser" class="form-check-input" id="is_superuser">
+                            <label class="form-check-label" for="is_superuser">Ist Super Benutzer ? </label>
+                        </div>
+
+
+                        <button type="submit" class="save-button btn">speichern</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.min.js"
+        integrity="sha512-nKXmKvJyiGQy343jatQlzDprflyB5c+tKCzGP3Uq67v+lmzfnZUi/ZT+fc6ITZfSC5HhaBKUIvr/nTLCV+7F+Q=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#country_id').change(function () {
+            let countryId = $(this).val();
+            $('#city_id').html('<option>Loading...</option>');
+            $.get("{% url 'load_cities' %}", {country_id: countryId}, function (data) {
+                let options = data.length ? '<option value="">Stadt auswählen</option>' : '<option value="">gibt nicht</option>';
+                data.forEach(function (city) {
+                    options += `<option value="${city.id}">${city.name}</option>`;
+                });
+                $('#city_id').html(options);
+                $('#district_id').html('<option value="">Bezirk auswählen</option>');
+            });
+        });
+
+        $('#city_id').change(function () {
+            let cityId = $(this).val();
+            $('#district_id').html('<option>Loading...</option>');
+            $.get("{% url 'load_districts' %}", {city_id: cityId}, function (data) {
+                let options = data.length ? '<option value="">Bezirk auswählen</option>' : '<option value="">gibt nicht</option>';
+                data.forEach(function (district) {
+                    options += `<option value="${district.id}">${district.name}</option>`;
+                });
+                $('#district_id').html(options);
+            });
+        });
+    });
+</script>
+
+<script src="{% static 'users/js/user-form-validation.js' %}"></script>
+<script src="{% static 'users/js/user-profile.js' %}"></script>
+<!--<script src="{% static 'users/js/location-pop-up.js' %}"></script>-->
+
+{% endblock %}

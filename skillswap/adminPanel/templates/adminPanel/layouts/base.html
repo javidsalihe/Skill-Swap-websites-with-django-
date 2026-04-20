@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="de" dir="ltr">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{% block title %}Admin Dashboard{% endblock %}</title>
+
+    <link rel="icon" href="{% static 'images/logo/skillswap.ico' %}">
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+            href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="{% static 'adminPanel/css/admin-style.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/crud.css' %}">
+
+
+    <style>
+        .notification-badge-circle {
+            background-color: #ff4d4d; /* قرمز روشن */
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 50%; /* تبدیل به دایره */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+            margin-left: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+
+    {% block styles %}{% endblock %}
+</head>
+
+<body>
+<div class="admin-container">
+    {% include 'adminPanel/partials/sidebar.html' %}
+
+    <main class="main-content">
+
+        <!--          header section -->
+        <header class="header">
+            <div class="header-left">
+                <button class="hamburger-btn" id="hamburgerBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1>{% block header_title %}{% endblock %}</h1>
+            </div>
+
+            <div class="header-right">
+                <div class="notifications">
+                    <a href="" class="notifications position-relative">
+                        <i class="fas fa-bell fa-lg" style="color: var(--primary-color)"></i>
+                        {% if unread_requests_count > 0 %}
+                        <span class="notification-badge">
+                             {{ unread_requests_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+
+                </div>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" id="app-logout-btn" class="btn">Abmelden</button>
+                </form>
+            </div>
+        </header>
+
+
+        <!--          end header section -->
+
+
+        <div class="content-area" id="contentArea">
+            {% block content %}
+
+            {% endblock %}
+        </div>
+
+        {% include 'adminPanel/partials/footer.html' %}
+    </main>
+</div>
+{% block scripts %}{% endblock %}
+<script src="{% static 'adminPanel/js/admin-script.js' %}"></script>
+
+</body>
+</html>

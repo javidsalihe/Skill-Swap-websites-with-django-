@@ -1,0 +1,111 @@
+{% extends 'adminPanel/layouts/base.html' %}
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css">
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block header_title %}
+Dashboard für {{ user.first_name }}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <h2 class="mb-4">Willkommen zurück, {{ user.first_name }}!</h2>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">Meine Anfragen-Status</div>
+                <div class="card-body">
+                    <canvas id="myRequestsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">Meine meistangebotenen Skills</div>
+                <div class="card-body">
+                    <canvas id="mySkillsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">Meine Bewertungen</div>
+                <div class="card-body">
+                    <canvas id="myRatingsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">Meine bevorzugten Zeiten für Swaps</div>
+                <div class="card-body" style="height: 300px;">
+                    <canvas id="myTimeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const userColors = ['#6610f2', '#fd7e14', '#20c997', '#0dcaf0', '#ffc107'];
+
+    // 1. My Requests Status (Doughnut)
+    new Chart(document.getElementById('myRequestsChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ my_requests_data|safe }}.map(d => d.status),
+            datasets: [{ data: {{ my_requests_data|safe }}.map(d => d.count), backgroundColor: userColors }]
+        }
+    });
+
+    // 2. My Skills (Horizontal Bar)
+    new Chart(document.getElementById('mySkillsChart'), {
+        type: 'bar',
+        options: { indexAxis: 'y', plugins: { legend: { display: false } } },
+        data: {
+            labels: {{ my_offered_skills_data|safe }}.map(d => d.offered_skill__skill_id__name),
+            datasets: [{ data: {{ my_offered_skills_data|safe }}.map(d => d.count), backgroundColor: '#20c997' }]
+        }
+    });
+
+    // 3. My Ratings (Radar) - بسیار جذاب برای یوزر
+    new Chart(document.getElementById('myRatingsChart'), {
+        type: 'polarArea',
+        data: {
+            labels: {{ my_ratings_data|safe }}.map(d => d.score + ' ★'),
+            datasets: [{ data: {{ my_ratings_data|safe }}.map(d => d.count), backgroundColor: 'rgba(255, 193, 7, 0.5)' }]
+        }
+    });
+
+    // 4. My Time Range (Bar)
+    new Chart(document.getElementById('myTimeChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ my_time_data|safe }}.map(d => d.preferred_time_range),
+            datasets: [{
+                label: 'Häufigkeit',
+                data: {{ my_time_data|safe }}.map(d => d.count),
+                backgroundColor: '#0dcaf0'
+            }]
+        },
+        options: { maintainAspectRatio: false }
+    });
+</script>
+{% endblock %}

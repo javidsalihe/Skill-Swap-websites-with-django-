@@ -1,0 +1,96 @@
+{% extends 'adminPanel/layouts/base.html' %}
+
+{% block header_title %}
+Users List
+{% endblock %}
+
+{% block title %}
+Users List
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css"
+      integrity="sha512-2bBQCjcnw658Lho4nlXJcc6WkV/UxpE/sAokbXPxQNGqmNdQrWqtw26Ns9kFF/yG792pKR1Sx8/Y1Lf1XN4GKA=="
+      crossorigin="anonymous" referrerpolicy="no-referrer"/>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="card">
+    <div class="card-body">
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="d-flex justify-content-end">
+            <div class="add-new-record-dev">
+                <a href="{% url 'user_form' %}">
+                    <i class="fa-solid fa-user-plus add-new-record-button"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Benutzer Name</th>
+                    <th>Vore Name</th>
+                    <th>Nach Name</th>
+                    <th>Email</th>
+                    <th>Benutzer ist aktiv</th>
+                    <th>Is Super User</th>
+                    <th>Action</th>
+
+                </tr>
+                </thead>
+                <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.first_name }}</td>
+                    <td>{{ user.last_name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.is_active }}</td>
+                    <td>{{ user.is_superuser }}</td>
+                    <td>
+                        <div class="edit-delete-info-div">
+                            <a href="{% url 'edit_form' user.id %}">
+                                <i class="fa-solid fa-pen-to-square edit-delete-info-buttons"></i>
+                            </a>
+
+                            {% if not user.is_superuser %}
+                            <a href="{% url 'destroy_user' user.id %}"
+                               onclick="return confirm('Möchten Sie diesen Benutzer und alle zugehörigen Daten wirklich löschen?')">
+                                <i class="fa fa-trash edit-delete-info-buttons" aria-hidden="true"></i>
+                            </a>
+                            {% endif %}
+
+                            <a href="{% url 'user_info' user.id %}"><i class="fa fa-info-circle edit-delete-info-buttons"  aria-hidden="true"></i></a>
+                        </div>
+
+                    </td>
+                </tr>
+                {% endfor%}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.min.js"
+        integrity="sha512-nKXmKvJyiGQy343jatQlzDprflyB5c+tKCzGP3Uq67v+lmzfnZUi/ZT+fc6ITZfSC5HhaBKUIvr/nTLCV+7F+Q=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{% endblock %}

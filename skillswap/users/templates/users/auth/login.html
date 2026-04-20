@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <title>Login | Skill Swap</title>
+
+    <link rel="icon" href="{% static 'images/logo/skillswap.ico' %}">
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css"/>
+
+    <!-- Existing CSS -->
+    <link rel="stylesheet" href="{% static 'core/css/index-style.css' %}"/>
+
+    <!-- Login Page Extra Style -->
+    <style>
+        .login-wrapper {
+            min-height: 70vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            color: rgb(224, 220, 188);
+        }
+
+        .login-card h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 700;
+            color: rgb(224, 220, 188);
+        }
+
+        .login-card input {
+            width: 100%;
+            margin-bottom: 20px;
+            border-radius: 25px;
+            border: 2px solid rgb(224, 220, 188);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 12px 20px;
+            font-size: 16px;
+        }
+
+        .login-card input::placeholder {
+            color: rgb(224, 220, 188);
+        }
+
+        .login-card input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .login-card .btn {
+            margin-top: 10px;
+        }
+
+        .login-links {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .login-links a {
+            color: rgb(224, 220, 188);
+            text-decoration: none;
+        }
+
+        .login-links a:hover {
+            text-decoration: underline;
+        }
+
+        .errorlist {
+            color: #ffdddd;
+            font-size: 14px;
+            margin-bottom: 15px;
+            list-style: none;
+            padding: 0;
+        }
+
+        @media (max-width: 576px) {
+            .login-card {
+                padding: 30px 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <a href="{% url 'core:index' %}">
+        <img src="{% static 'images/logo/skillswap-png.png' %}" class="logo" alt="SkillSwap Logo"/>
+    </a>
+</header>
+
+<main class="login-wrapper">
+    <div class="login-card">
+        <h2>Welcome Back</h2>
+
+        <form method="post" action="{{ request.get_full_path }}">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <ul class="errorlist">
+                {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            <!-- Username -->
+            <input
+                    type="text"
+                    name="username"
+                    placeholder="Username"
+                    required
+                    value="{{ form.username.value|default:'' }}"
+            />
+
+            {% for error in form.username.errors %}
+            <div class="errorlist">{{ error }}</div>
+            {% endfor %}
+
+            <!-- Password -->
+            <input
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    required
+            />
+
+            {% for error in form.password.errors %}
+            <div class="errorlist">{{ error }}</div>
+            {% endfor %}
+
+            <button type="submit" class="btn">Login</button>
+        </form>
+
+
+        <div class="login-links">
+            <p>
+                <a href="{% url 'password_reset' %}">Forgot Password?</a>
+            </p>
+
+            <p>
+                No account?
+                <a href="{% url 'register' %}?{{ request.GET.urlencode }}">Register</a>
+            </p>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

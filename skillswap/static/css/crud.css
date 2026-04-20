@@ -1,0 +1,44 @@
+.add-new-record-dev {
+       text-align: right;
+       margin-bottom: 10px;
+}
+    .add-new-record-button{
+        font-size: 35px;
+        color: rgb(35, 60, 47);
+        cursor: pointer;
+    }
+    .add-new-record-button:hover {
+    color: rgb(224, 220, 188);
+    transform: scale(1.2);
+}
+
+    .edit-delete-info-div{
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .edit-delete-info-masterData-div{
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .edit-delete-info-buttons{
+        font-size: 20px;
+        color: rgb(35, 60, 47);
+        cursor: pointer;
+    }
+
+    .edit-delete-info-buttons:hover{
+        color: rgb(224, 220, 188);
+        transform: scale(1.2);
+    }
+button.save-button.btn {
+    background-color: rgb(35, 60, 47);
+    color: rgb(224, 220, 188);
+}
+
+label{
+    color: rgb(35, 60, 47);
+}
+
+

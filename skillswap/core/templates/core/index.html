@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="This website is about, how you can swap your skill with near neighborhood"/>
+    <meta name="author" content="javid salihe"/>
+    <link rel="icon" href="{% static 'images/logo/skillswap.ico' %}">
+
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+            integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link
+            href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+            rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css"
+          integrity="sha512-2bBQCjcnw658Lho4nlXJcc6WkV/UxpE/sAokbXPxQNGqmNdQrWqtw26Ns9kFF/yG792pKR1Sx8/Y1Lf1XN4GKA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link rel="stylesheet" href="{% static 'core/css/index-style.css' %}"/>
+
+    <style>
+
+        .result-content {
+            width: 100%;
+            min-height: 0;
+            border: 3px solid #333;
+            display: none;
+            margin-top: 20px;
+        }
+
+        .result-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 20px; /* اضافه کردن padding */
+            gap: 15px; /* فاصله بین آیتم‌ها */
+        }
+
+        .result-record {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 600px; /* محدودیت عرض */
+            padding: 18px 25px;
+            border: 2px solid rgb(224, 220, 188);
+            border-radius: 25px;
+            background: rgb(224, 220, 188);
+            color: #233C2F;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-record:hover {
+            border-color: rgb(35, 60, 47);
+            background: rgba(35, 60, 47, 0.03);
+            transform: translateY(-2px); /* تغییر از translateX به translateY */
+            box-shadow: 0 5px 15px rgba(35, 60, 47, 0.15);
+        }
+
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 10vh;
+            margin-top: 20vh;
+
+        }
+
+        .center-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            width: 1200px;
+        }
+
+        #skill_search,
+        #postalcode {
+            margin: 15px;
+            border-radius: 25px;
+            border: 2px solid rgb(224, 220, 188);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(6px);
+            color: white;
+            padding: 12px 20px;
+            font-size: 18px;
+            transition: 0.3s all;
+        }
+
+        #skill_search::placeholder,
+        #postalcode::placeholder {
+            color: rgb(224, 220, 188);
+        }
+
+        #skill_search:focus,
+        #postalcode:focus {
+            border-color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.15);
+            outline: none;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn {
+
+            width: 100%;
+            max-width: 360px;
+            margin: 15px auto;
+            cursor: pointer;
+
+            color: rgb(224, 220, 188);
+            background: rgb(35, 60, 47);
+            border-radius: 20px;
+            border: 2px solid rgb(35, 60, 47);
+            font-weight: bold;
+            font-size: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+
+        }
+
+        .btn:hover {
+            color: rgb(224, 220, 188);
+            background-color: rgb(35, 60, 47);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+
+
+        @media (max-width: 786px) {
+
+            main {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                height: 200px;
+
+            }
+
+            .center-wrapper {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+                max-width: 1200px;
+                padding: 0 20px;
+            }
+
+            .btn {
+                width: 100%;
+                font-size: 20px;
+            }
+        }
+
+    </style>
+    <title>Skill Swap</title>
+</head>
+<body>
+<header>
+    <a href="{% url 'core:index' %}"
+    ><img src="{% static 'images/logo/skillswap-png.png' %}" class="logo" alt="This is logo"
+    /></a>
+
+    <div class="nav-right">
+        <div class="bars-div" onclick="navbar_open()">
+            <span><i class="fa-solid fa-bars"></i></span>
+        </div>
+        <div class="close-div hidden" onclick="navbar_close()">
+            <span><i class="fa-solid fa-xmark"></i></span>
+        </div>
+    </div>
+    <div id="PopupMenu" class="hidden">
+        <nav>
+            <a href="#skills-section">Skills</a>
+            <a href="#swaps-section">Skill Swap</a>
+            <a href="#how-it-works">Wie funktioniert</a>
+            <a href="#contact">kontaktieren</a>
+            <a href="{% url 'login' %}">Anmelden</a>
+        </nav>
+    </div>
+
+</header>
+
+<main class="main-content">
+    <div class="center-wrapper">
+
+        <div class="input-group mb-3" style="position:relative;">
+            <input type="text" name="skill_search" id="skill_search" class="form-control"
+                   placeholder="Nach welchen Fähigkeiten?">
+            <ul id="skill-list"
+                style="
+            position:absolute;
+            top:100%;
+            left:0;
+            width:100%;
+            background:#233C2F;
+            color:rgb(224, 220, 188);
+            z-index:1000;
+            list-style:none;
+            padding:0;
+            margin:0;">
+            </ul>
+        </div>
+
+
+        <div class="input-group mb-3">
+            <input type="text" name="postalcode" id="postalcode" class="form-control" placeholder="Ihre Postleitzahl">
+        </div>
+        <div class="input-group mb-3">
+            <button type="button" class="btn" id="searchBtn">klicken Sie</button>
+        </div>
+    </div>
+</main>
+
+<div class="result-content">
+    <div class="result-wrapper">
+    </div>
+</div>
+
+
+<!--slideshow  -->
+<section id="skills-section" class="info-section">
+    <div class="container">
+        <h2 class="section-title">Verfügbare Skills</h2>
+        <div class="slider-container">
+            <div class="slider-track marquee-fast">
+                <div class="skill-card">Programmierung</div>
+                <div class="skill-card">Grafikdesign</div>
+                <div class="skill-card">Sprachen</div>
+                <div class="skill-card">Marketing</div>
+                <div class="skill-card">Handwerk</div>
+                <div class="skill-card">Musik</div>
+                <div class="skill-card">Programmierung</div>
+                <div class="skill-card">Grafikdesign</div>
+                <div class="skill-card">Sprachen</div>
+                <div class="skill-card">Marketing</div>
+                <div class="skill-card">Handwerk</div>
+                <div class="skill-card">Musik</div>
+            </div>
+        </div>
+    </div>
+</section>
+<section id="swaps-section" class="info-section alternate-bg">
+    <div class="container">
+        <h2 class="section-title">Erfolgreiche Swaps</h2>
+        <div class="slider-container">
+            <div class="slider-track marquee-slow">
+                <div class="skill-card swap">Mathe ↔ Web</div>
+                <div class="skill-card swap">Kochen ↔ Yoga</div>
+                <div class="skill-card swap">Deutsch ↔ Englisch</div>
+                <div class="skill-card swap">Gitarre ↔ Piano</div>
+                <div class="skill-card swap">Mathe ↔ Web</div>
+                <div class="skill-card swap">Kochen ↔ Yoga</div>
+                <div class="skill-card swap">Deutsch ↔ Englisch</div>
+                <div class="skill-card swap">Gitarre ↔ Piano</div>
+            </div>
+        </div>
+    </div>
+</section>
+<!--slide show-->
+
+
+<!--wie funktionet -->
+<section id="how-it-works" style="padding: 60px 20px; text-align: center; color: white;">
+    <h2 style="color: rgb(224, 220, 188); margin-bottom: 40px;">Wie es funktioniert</h2>
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 40px;">
+        <div><i class="fa-solid fa-search" style="font-size: 40px; color: rgb(224, 220, 188);"></i>
+            <p>Suchen</p></div>
+        <div><i class="fa-solid fa-comments" style="font-size: 40px; color: rgb(224, 220, 188);"></i>
+            <p>Kontaktieren</p></div>
+        <div><i class="fa-solid fa-handshake" style="font-size: 40px; color: rgb(224, 220, 188);"></i>
+            <p>Tauschen</p></div>
+    </div>
+</section>
+
+<!--photo slideshow -->
+<section id="image-slider-section" class="info-section alternate-bg">
+    <h2 class="section-title">Impressionen</h2>
+    <div class="image-slider-container">
+        <div class="image-slider-track" id="imageSliderTrack">
+
+
+
+            <img src="{% static 'images/slider/slid5.png' %}" alt="Skill Swap Bild 1" class="slider-image">
+            <img src="{% static 'images/slider/slid6.png' %}" alt="Skill Swap Bild 1" class="slider-image">
+            <img src="{% static 'images/slider/slid4.jpg' %}" alt="Skill Swap Bild 1" class="slider-image">
+            <img src="{% static 'images/slider/slid7.png' %}" alt="Skill Swap Bild 1" class="slider-image">
+            <img src="{% static 'images/slider/slid8.png' %}" alt="Skill Swap Bild 1" class="slider-image">
+            <img src="{% static 'images/slider/slid9.png' %}" alt="Skill Swap Bild 1" class="slider-image">
+            <img src="{% static 'images/slider/slid10.png' %}" alt="Skill Swap Bild 1" class="slider-image">
+             <img src="{% static 'images/slider/slid3.jpg' %}" alt="Skill Swap Bild 1" class="slider-image">
+            <img src="{% static 'images/slider/slid11.png' %}" alt="Skill Swap Bild 1" class="slider-image">
+            <img src="{% static 'images/slider/slid12.png' %}" alt="Skill Swap Bild 1" class="slider-image">
+            <img src="{% static 'images/slider/slid13.png' %}" alt="Skill Swap Bild 1" class="slider-image">
+            <img src="{% static 'images/slider/slid14.png' %}" alt="Skill Swap Bild 1" class="slider-image">
+            <img src="{% static 'images/slider/slid2.png' %}" alt="Skill Swap Bild 1" class="slider-image">
+            <img src="{% static 'images/slider/slid15.png' %}" alt="Skill Swap Bild 1" class="slider-image">
+            <img src="{% static 'images/slider/slid16.png' %}" alt="Skill Swap Bild 1" class="slider-image">
+            <img src="{% static 'images/slider/slid17.png' %}" alt="Skill Swap Bild 1" class="slider-image">
+            <img src="{% static 'images/slider/slid18.png' %}" alt="Skill Swap Bild 1" class="slider-image">
+            <img src="{% static 'images/slider/slid19.png' %}" alt="Skill Swap Bild 1" class="slider-image">
+             <img src="{% static 'images/slider/slid1.png' %}" alt="Skill Swap Bild 1" class="slider-image">
+            <img src="{% static 'images/slider/slid20.png' %}" alt="Skill Swap Bild 1" class="slider-image">
+
+
+
+
+
+        </div>
+    </div>
+</section>
+
+<!--rating -->
+<section id="ratings-section" class="info-section">
+    <div class="container">
+        <h2 class="section-title">Was unsere Nutzer sagen</h2>
+        <div class="slider-container">
+            <div class="slider-track marquee-slow">
+
+                {# تکرار اول برای ایجاد حرکت پیوسته #}
+                {% for rating in latest_ratings %}
+                <div class="testimonial-card">
+                    <div class="rating-stars">
+                        {% if rating.score == 5 %}
+                            ★★★★★
+                        {% else %}
+                            ★★★★☆
+                        {% endif %}
+                    </div>
+                    <p class="testimonial-text">"{{ rating.comment|truncatechars:100 }}"</p>
+                    <span class="testimonial-author">- {{ rating.author.get_full_name|default:rating.author.username }}</span>
+                </div>
+                {% endfor %}
+
+                {# تکرار دوم برای اینکه وقتی اسلایدر تمام شد، بریدگی دیده نشود #}
+                {% for rating in latest_ratings %}
+                <div class="testimonial-card">
+                    <div class="rating-stars">
+                        {% if rating.score == 5 %} ★★★★★ {% else %} ★★★★☆ {% endif %}
+                    </div>
+                    <p class="testimonial-text">"{{ rating.comment|truncatechars:100 }}"</p>
+                    <span class="testimonial-author">- {{ rating.author.get_full_name|default:rating.author.username }}</span>
+                </div>
+                {% endfor %}
+
+                {% if not latest_ratings %}
+                    <p class="text-white">Noch keine Bewertungen vorhanden.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!--kontaktieren-->
+<section id="contact" style="padding: 60px 20px; text-align: center;">
+    <h2 style="color: rgb(224, 220, 188); margin-bottom: 30px;">Kontakt</h2>
+    <form action="{% url 'save_contact' %}" method="POST" style="max-width: 400px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px;">
+       {% csrf_token %}
+        <input type="text" name="name" placeholder="Name" style="padding: 10px; border-radius: 10px; border: none;">
+        <input type="email" name="email" placeholder="Email" style="padding: 10px; border-radius: 10px; border: none;">
+        <textarea placeholder="Nachricht" name="message"
+                  style="padding: 10px; border-radius: 10px; border: none; height: 100px;"></textarea>
+        <button class="btn" type="submit" style="width: 100%;">Senden</button>
+    </form>
+</section>
+
+<footer style="padding: 40px; background: #233C2F; text-align: center; color: rgb(224, 220, 188); margin-top: 50px;">
+    <p>Email: info@skillswap.com | Tel: +49 123 45678</p>
+    <p>&copy; 2026 SkillSwap</p>
+</footer>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.min.js"
+        integrity="sha512-nKXmKvJyiGQy343jatQlzDprflyB5c+tKCzGP3Uq67v+lmzfnZUi/ZT+fc6ITZfSC5HhaBKUIvr/nTLCV+7F+Q=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="{% static 'core/js/index-script.js' %}"></script>
+<script>
+    let debounce;
+    const input = document.getElementById("skill_search");
+    const list = document.getElementById("skill-list");
+
+    input.addEventListener("input", e => {
+        clearTimeout(debounce);
+        const value = e.target.value.trim();
+
+        if (value.length < 2) {
+            list.innerHTML = "";
+            return;
+        }
+
+        debounce = setTimeout(() => {
+            fetch(`/api/skills/autocomplete/?q=${value}`)
+                .then(r => r.json())
+                .then(data => {
+                    list.innerHTML = data.map(item => `
+                    <li onclick="selectSkill('${item.label}')"
+                        style="cursor:pointer;padding:6px;">
+                        ${item.label}
+                    </li>
+                `).join("");
+                });
+        }, 300);
+    });
+
+    function selectSkill(value) {
+        input.value = value;
+        list.innerHTML = "";
+    }
+</script>
+<!--<script>-->
+
+<!--    document.getElementById("searchBtn").onclick = () => {-->
+<!--        const skillValue = document.getElementById("skill_search").value;-->
+<!--        const postalValue = document.getElementById("postalcode").value;-->
+<!--        const resultContent = document.querySelector(".result-content");-->
+<!--        const resultWrapper = document.querySelector(".result-wrapper");-->
+
+<!--        fetch(`/api/search/?skill=${skillValue}&postalcode=${postalValue}`)-->
+<!--            .then(r => r.json())-->
+<!--            .then(data => {-->
+<!--                resultContent.style.display = "block";-->
+<!--                if (data.length > 0) {-->
+<!--                    resultWrapper.innerHTML = data.map(r => `-->
+<!--<a href="/login/?skill=${skillValue}&postalcode=${postalValue}" class="result-record">-->
+<!--    <strong>${r.user}</strong>&nbsp;&nbsp;-->
+<!--    <span>${r.distance_km} km</span>-->
+<!--</a>-->
+<!--                `).join("");-->
+<!--                } else {-->
+<!--                    resultWrapper.innerHTML = "<p style='color: white;'>Lieder nicht gefunden</p>";-->
+<!--                }-->
+<!--            })-->
+<!--            .catch(err => console.error("خطا در دریافت اطلاعات:", err));-->
+<!--    };-->
+<!--</script>-->
+
+
+<script>
+    document.getElementById("searchBtn").onclick = () => {
+    const skillValue = document.getElementById("skill_search").value;
+    const postalValue = document.getElementById("postalcode").value;
+    const resultContent = document.querySelector(".result-content");
+    const resultWrapper = document.querySelector(".result-wrapper");
+
+    fetch(`/api/search/?skill=${skillValue}&postalcode=${postalValue}`)
+        .then(r => {
+            if (!r.ok) throw new Error("Server Error");
+            return r.json();
+        })
+        .then(data => {
+            resultContent.style.display = "block";
+            if (data.length > 0) {
+                resultWrapper.innerHTML = data.map(r => {
+                    // عکس پیش‌فرض در صورت نبود عکس پروفایل
+                    const userImage = r.profile_image ? r.profile_image : `https://ui-avatars.com/api/?name=${r.user}&background=random`;
+
+                    return `
+                    <a href="/login/?skill=${skillValue}&postalcode=${postalValue}" class="result-record">
+                        <div style="display: flex; align-items: center; width: 100%; gap: 15px;">
+                            <img src="${userImage}" alt="${r.user}"
+                                 style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #233C2F;">
+
+                            <div style="flex-grow: 1;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <strong style="font-size: 1.1rem; color: #233C2F;">${r.user}</strong>
+                                    <span style="font-size: 0.85rem; font-weight: bold; background: #233C2F; color: white; padding: 2px 8px; border-radius: 10px;">
+                                        ${r.distance_km ? r.distance_km + ' km' : 'N/A'}
+                                    </span>
+                                </div>
+                                <div style="font-size: 0.85rem; color: #555; margin-top: 3px;">
+                                    <span>Bietet an: <strong style="color: #233C2F;">${r.offered}</strong></span>
+                                    <br>
+                                    <span>gewünschter : <strong style="color: #233C2F;">${r.requested}</strong></span>
+                                    <br><small>${r.city}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </a>`;
+                }).join("");
+            } else {
+                resultWrapper.innerHTML = "<p style='color: white; padding: 20px;'>Leider nichts gefunden</p>";
+            }
+        })
+        .catch(err => {
+            console.error("Error fetching data:", err);
+            resultWrapper.innerHTML = "<p style='color: #ff6b6b; padding: 20px;'>Verbindung zum Server fehlgeschlagen.</p>";
+        });
+};
+</script>
+
+</body>
+</html>
+

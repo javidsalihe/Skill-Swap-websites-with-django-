@@ -1,0 +1,314 @@
+{% extends 'adminPanel/layouts/base.html' %}
+{% load static %}
+
+{% block title %}Skills suchen{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css"
+      integrity="sha512-2bBQCjcnw658Lho4nlXJcc6WkV/UxpE/sAokbXPxQNGqmNdQrWqtw26Ns9kFF/yG792pKR1Sx8/Y1Lf1XN4GKA=="
+      crossorigin="anonymous" referrerpolicy="no-referrer"/>
+<style>
+    /* ===== Cards ===== */
+    .search-card {
+        border-radius: 22px;
+        background: rgba(255, 255, 255, .9);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, .15);
+    }
+
+    .result-card {
+        background: rgba(255, 255, 255, .85);
+        border-radius: 22px;
+        border: none;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 20px 45px rgba(0, 0, 0, .18);
+        transition: .35s ease;
+    }
+
+    .result-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 30px 70px rgba(0, 0, 0, .3);
+    }
+
+    /* ===== User ===== */
+    .profile-img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid #23402f;
+    }
+
+    .user-info h5 {
+        margin-left: 10px;
+        font-weight: bold;
+        font-size: 22px;
+
+    }
+
+    /* ===== Skill Flex ===== */
+    .skill-flex {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap; /* دسکتاپ: یک ردیف */
+    }
+
+
+    .skill-box {
+        flex: 1 1 180px; /* ⬅️ حداقل 180px عرض، اما می‌تواند بزرگ‌تر شود */
+        min-width: 0; /* ⬅️ متن طولانی باعث overflow نشود */
+        background: rgba(35, 60, 47, .07);
+        border-radius: 16px;
+        padding: 14px;
+        word-break: break-word; /* ⬅️ متن بلند → ارتفاع بیشتر */
+        margin-top: 10px;
+    }
+
+    .info-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #777;
+    }
+
+    .info-value {
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    /* Mobile */
+    @media (max-width: 576px) {
+        .skill-flex {
+            margin-top: 10px;
+            flex-direction: column; /* باکس‌ها زیر هم */
+            align-items: stretch; /* stretch درست می‌کند عرض کامل */
+            gap: 8px; /* فاصله بین باکس‌ها */
+        }
+
+        .skill-box {
+            flex: 0 0 auto; /* ارتفاع فقط اندازه محتوا */
+            width: 100%; /* عرض کامل */
+            height: auto; /* ارتفاع بر اساس محتوا */
+            padding: 10px; /* padding مناسب برای موبایل */
+            box-sizing: border-box; /* مطمئن می‌شویم padding داخل باکس باشد */
+            font-size: 14px; /* کوچک‌تر برای موبایل */
+        }
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    {% if messages %}
+    <div class="container mb-3">
+        {% for message in messages %}
+        <div class="alert
+        {% if message.tags == 'success' %}alert-success
+        {% elif message.tags == 'error' %}alert-danger
+        {% elif message.tags == 'info' %}alert-info
+        {% else %}alert-secondary
+        {% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+
+    <!-- Search -->
+    <div class="row mb-4">
+        <div class="col-lg-12 col-md-10">
+            <div class="card search-card">
+                <div class="card-body p-3">
+                    <form class="d-flex gap-2" action="{% url 'searching_result' %}" method="GET">
+                        <input name="skill" class="form-control border-0 bg-light"
+                               placeholder="Skill suchen..." value="{{ skill }}" required>
+                        <input name="postalcode" class="form-control border-0 bg-light"
+                               style="max-width:120px" placeholder="PLZ"
+                               value="{{ postal_code }}">
+                        <button class="logout-btn" id="">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div class="row g-4">
+        {% for res in results %}
+        <div class="col-xl-4 col-md-6 col-12">
+            <div class="card result-card h-100">
+                <div class="card-body">
+
+                    <!-- User -->
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="{% if res.profile_image_url %}{{ res.profile_image_url.url }}{% else %}{% static 'images/logo/skillswap.jpg' %}{% endif %}"
+                             class="profile-img me-3">
+                        <div class="user-info">
+                            <h5>{{ res.user_name }}</h5>
+                        </div>
+                    </div>
+
+                    <!-- Skills -->
+                    <div class="skill-flex">
+
+                        <!-- ===== Always visible (first 5) ===== -->
+                        <div class="skill-box">
+                            <div class="info-label">Postalcode</div>
+                            <div class="info-value">{{ res.plz }}</div>
+                        </div>
+
+                        <div class="skill-box">
+                            <div class="info-label">Distance</div>
+                            <div class="info-value">{{ res.distance_km }} km</div>
+                        </div>
+
+                        <div class="skill-box">
+                            <div class="info-label">Bietet an</div>
+                            <div class="info-value text-success">{{ res.offered_skill }}</div>
+                        </div>
+
+                        <div class="skill-box">
+                            <div class="info-label">Sucht nach</div>
+                            <div class="info-value text-danger">{{ res.requested_skill }}</div>
+                        </div>
+
+                        <div class="skill-box">
+                            <div class="info-label">Tage</div>
+                            <div class="info-value">{{ res.available_days }}</div>
+                        </div>
+
+                        <!-- ===== Collapsible part ===== -->
+                        <div class="collapse w-100" id="moreSkills{{ forloop.counter }}">
+                            <div class="skill-box">
+                                <div class="info-label">Uhrzeit</div>
+                                <div class="info-value">{{ res.available_time }}</div>
+                            </div>
+
+                            <div class="skill-box">
+                                <div class="info-label">Bezeichnung</div>
+                                <div class="info-value">{{ res.title }}</div>
+                            </div>
+
+                            <div class="skill-box">
+                                <div class="info-label">Details</div>
+                                <div class="info-value">{{ res.description }}</div>
+                            </div>
+
+                            <div class="skill-box">
+                                <div class="info-label">Sprache</div>
+                                <div class="info-value">{{ res.preferred_language }}</div>
+                            </div>
+
+                            <div class="skill-box">
+                                <div class="info-label">Umkreis (km)</div>
+                                <div class="info-value">{{ res.max_distance_km }}</div>
+                            </div>
+
+                            <div class="skill-box">
+                                <div class="info-label">Priorität</div>
+                                <div class="info-value">{{ res.urgency_level }}</div>
+                            </div>
+
+                            <div class="skill-box">
+                                <div class="info-label">Zeitaufwand (Minuten)</div>
+                                <div class="info-value">{{ res.estimated_duration_minutes }}</div>
+                            </div>
+
+                            <div class="skill-box">
+                                <div class="info-label">Ablaufdatum</div>
+                                <div class="info-value">{{ res.expires_at }}</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <button class="save-button btn"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#moreSkills{{ forloop.counter }}"
+                            aria-expanded="false" style="margin-top: 10px;">
+                      <i style="" class="fa-solid fa-caret-down"></i>
+                    </button>
+
+                    <form method="POST" action="{% url 'send_exchange_request' res.exchange_uuid %}">
+                        {% csrf_token %}
+                        <button type="submit" class="save-button btn w-100 mt-4 rounded-pill">
+                            Anfrage senden
+                        </button>
+                    </form>
+
+
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <p>Keine passenden Angebote gefunden</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(btn => {
+        btn.addEventListener('click', function () {
+            setTimeout(() => {
+                if (this.getAttribute('aria-expanded') === 'true') {
+                    this.innerHTML = '<i class="fa-solid fa-caret-up"></i>';
+                } else {
+                    this.innerHTML = '<i class="fa-solid fa-caret-square-o-down"></i>';
+                }
+            }, 200);
+        });
+    });
+});
+</script>
+{% endblock %}
+
+
+
+
+<!-- <div class="col-lg-3 col-md-4 mb-4">-->
+<!--            <div class="filter-sidebar shadow-sm">-->
+<!--                <h5 class="filter-title"><i class="fas fa-filter me-2"></i>Filter</h5>-->
+
+<!--                <form method="GET" action="">-->
+<!--                    <input type="hidden" name="skill" value="{{ request.GET.skill }}">-->
+<!--                    <input type="hidden" name="postalcode" value="{{ request.GET.postalcode }}">-->
+
+<!--                    <div class="filter-group">-->
+<!--                        <label class="filter-label">Umkreis (km): <span id="rangeValue" class="text-primary">25</span> km</label>-->
+<!--                        <input type="range" name="radius" class="range-slider" min="1" max="100" value="25" oninput="document.getElementById('rangeValue').innerText = this.value">-->
+<!--                    </div>-->
+
+<!--                    <div class="filter-group">-->
+<!--                        <label class="filter-label">Kategorie</label>-->
+<!--                        <select name="category" class="form-select form-select-sm">-->
+<!--                            <option value="">Alle Kategorien</option>-->
+<!--                            <option value="tech">Technik</option>-->
+<!--                            <option value="languages">Sprachen</option>-->
+<!--                            <option value="art">Kunst</option>-->
+<!--                        </select>-->
+<!--                    </div>-->
+
+<!--                    <div class="filter-group">-->
+<!--                        <div class="form-check">-->
+<!--                            <input class="form-check-input" type="checkbox" name="online_only" id="onlineCheck">-->
+<!--                            <label class="form-check-label small" for="onlineCheck">Nur Online verfügbar</label>-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+<!--                    <button type="submit" class="btn btn-primary w-100 btn-sm" style="background: var(--primary-color)">-->
+<!--                        Filter anwenden-->
+<!--                    </button>-->
+<!--                </form>-->
+<!--            </div>-->
+<!--        </div>-->

@@ -1,0 +1,257 @@
+{% extends 'adminPanel/layouts/base.html' %}
+{% load static %}
+
+{% block title %} swap details {% endblock %}
+{% block header_title %} swap details {% endblock %}
+
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+
+<style>
+    .detail-card { border-radius: 25px; border: none; color: rgb(35, 60, 47); padding: 30px; margin-bottom: 30px; }
+    .section-title { color:rgb(175, 169, 111); border-left: 5px solid rgb(175, 169, 111) ; padding-left: 15px; margin-bottom: 20px; font-weight: bold; text-transform: uppercase; font-size: 1.1rem; }
+    .info-label { font-weight: 600; color: #555; font-size: 0.9rem; }
+    .info-value { font-weight: 500; margin-bottom: 15px; border-bottom: 1px solid rgba(35, 60, 47, 0.1); }
+    .doc-link { color: rgb(35, 60, 47); text-decoration: none; font-weight: bold; }
+    .status-active { color: #2ecc71; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="detail-card shadow">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Exchange Details</h2>
+            <a href="{% url 'skill_swap_details' %}" style="background-color: rgb(35, 60, 47); color: white; border-radius: 10px;" class="btn btn-outline-dark">Zurück zur Liste</a>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12"><div class="section-title">Allgemeine Informationen</div></div>
+            <div class="col-md-4">
+                <p class="info-label">UUID</p>
+                <p class="info-value">{{ exchange.uuid }}</p>
+            </div>
+            <div class="col-md-4">
+                <p class="info-label">Status</p>
+                <p class="info-value"><strong>{{ exchange.get_status_display }}</strong></p>
+            </div>
+            <div class="col-md-4">
+                <p class="info-label">Initiator</p>
+                <p class="info-value">{{ exchange.initiated_by|default:"-" }}</p>
+            </div>
+
+            <div class="col-md-6">
+                <p class="info-label">Teilnehmer X (Skill: {{ exchange.skill_from_x_to_y }})</p>
+                <p class="info-value">{{ exchange.user_x.get_full_name }} ({{ exchange.user_x.email }})</p>
+            </div>
+            <div class="col-md-6">
+                <p class="info-label">Teilnehmer Y (Skill: {{ exchange.skill_from_y_to_x }})</p>
+                <p class="info-value">{{ exchange.user_y.get_full_name }} ({{ exchange.user_y.email }})</p>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-12"><div class="section-title">Termin & Ort</div></div>
+            <div class="col-md-3">
+                <p class="info-label">Geplant am</p>
+                <p class="info-value">{{ exchange.scheduled_at|date:"d.m.Y H:i"|default:"Nicht gesetzt" }}</p>
+            </div>
+            <div class="col-md-3">
+                <p class="info-label">Ort-Typ</p>
+                <p class="info-value">{{ exchange.get_location_type_display }}</p>
+            </div>
+            <div class="col-md-6">
+                <p class="info-label">Adresse</p>
+                <p class="info-value">{{ exchange.meeting_address|default:"Keine Adresse" }}</p>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-12"><div class="section-title">Abschluss-Details</div></div>
+            <div class="col-md-3">
+                <p class="info-label">Abgeschlossen</p>
+                <p class="info-value">{% if exchange.completed_at %} Ja ({{ exchange.completed_at|date:"d.m.Y" }}) {% else %} Nein {% endif %}</p>
+            </div>
+            <div class="col-md-3">
+                <p class="info-label">Dauer (Minuten)</p>
+                <p class="info-value">{{ exchange.actual_duration_minutes|default:"-" }}</p>
+            </div>
+            <div class="col-md-3">
+                <p class="info-label">Bestätigt von X</p>
+                <p class="info-value">{% if exchange.done_by_x %} ✅ ({{ exchange.duration_minutes_x }}m) {% else %} ❌ {% endif %}</p>
+            </div>
+            <div class="col-md-3">
+                <p class="info-label">Bestätigt von Y</p>
+                <p class="info-value">{% if exchange.done_by_y %} ✅ ({{ exchange.duration_minutes_y }}m) {% else %} ❌ {% endif %}</p>
+            </div>
+            {% if exchange.cancellation_reason %}
+            <div class="col-md-12">
+                <p class="info-label text-danger">Abbruchgrund</p>
+                <p class="info-value text-danger">{{ exchange.cancellation_reason }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-12"><div class="section-title">Dokumente</div></div>
+            <div class="col-md-6">
+                <p class="info-label">Vereinbarung (PDF)</p>
+                {% if exchange.pdf_agreement %}
+                    <p class="info-value"><a href="{{ exchange.pdf_agreement.file.url }}" class="doc-link">📄 Download Vereinbarung</a></p>
+                {% else %}
+                    <p class="info-value text-muted">Keine Vereinbarung vorhanden</p>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                <p class="info-label">Abschlussbericht (PDF)</p>
+                {% if exchange.pdf_completion %}
+                    <p class="info-value"><a href="{{ exchange.pdf_completion.file.url }}" class="doc-link">📄 Download Abschlussbericht</a></p>
+                {% else %}
+                    <p class="info-value text-muted">Kein Bericht vorhanden</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-12"><div class="section-title">Verhandlungen</div></div>
+            <div class="col-md-12">
+                <div class="table-responsive">
+                    <table class="table table-sm" style="font-size: 0.85rem;">
+                        <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>Vorschlag von</th>
+                                <th>Status</th>
+                                <th>Vorgeschlagene Zeit</th>
+                                <th>Nachricht</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for neg in exchange.negotiations.all %}
+                            <tr>
+                                <td>{{ neg.created_at|date:"d.m.y H:i" }}</td>
+                                <td>{{ neg.proposer }}</td>
+                                <td>{{ neg.get_status_display }}</td>
+                                <td>{{ neg.proposed_scheduled_at|date:"d.m.y H:i" }}</td>
+                                <td>{{ neg.message|truncatechars:50 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5">Keine Verhandlungsdaten.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row mt-4">
+    <div class="col-md-12"><div class="section-title">Bewertungen & Kommentare</div></div>
+    {% for rating in exchange.ratings.all %}
+    {% if rating.status == 'published' %}
+    <div class="col-md-12 mb-4">
+        <div class="p-4" style="background: rgba(35, 60, 47, 0.05); border-radius: 20px; border: 1px solid rgba(35, 60, 47, 0.1);">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="mb-1"><strong>{{ rating.author.get_full_name }}</strong> gab <strong>{{ rating.score }}/5 Sternen</strong></p>
+                    <p class="mb-2">"{{ rating.comment }}"</p>
+                    <small class="text-muted">{{ rating.created_at|date:"d.m.Y" }}</small>
+                </div>
+                {% if rating.author != request.user %}
+    <button class="btn btn-sm text-white"
+            style="background-color: rgb(35, 60, 47); border-radius: 10px;"
+            data-bs-toggle="modal"
+            data-bs-target="#commentModal{{ rating.pk }}">
+        <i class="fa fa-reply"></i> Antworten
+    </button>
+{% else %}
+    <span class="badge bg-light text-muted" style="border-radius: 10px;">Eigene Bewertung</span>
+{% endif %}
+            </div>
+
+            {% if rating.comments.all %}
+            <div class="mt-3 ms-4 ps-3" style="border-left: 3px solid rgb(175, 169, 111);">
+                {% for comment in rating.comments.all %}
+                <div class="mb-2 p-2" style="background: white; border-radius: 10px;">
+                    <div class="d-flex justify-content-between">
+                        <small><strong>{{ comment.author.get_full_name }}</strong>
+                            {% if comment.is_admin_reply %}<span class="badge bg-dark">Admin</span>{% endif %}:
+                        </small>
+                        <small class="text-muted" style="font-size: 0.7rem;">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
+                    </div>
+                    <p class="small mb-0">{{ comment.content }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="modal fade" id="commentModal{{ rating.pk }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px;">
+                <form method="POST" action="{% url 'add_exchange_comment' rating.pk %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title">Antwort schreiben</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="small text-muted">Antwort an: <strong>{{ rating.author.get_full_name }}</strong></p>
+                        <div class="mb-3">
+                            <label class="form-label">Ihr Kommentar</label>
+                            <textarea name="content" class="form-control" rows="4" placeholder="Schreiben Sie hier..." required style="border-radius: 15px;"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 10px;">Abbrechen</button>
+                        <button type="submit" class="btn text-white" style="background-color: rgb(35, 60, 47); border-radius: 10px;">Kommentar senden</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% empty %}
+    <div class="col-md-12"><p class="text-muted">Noch keine Bewertungen abgegeben.</p></div>
+    {% endfor %}
+</div>
+
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <button class="btn btn-sm btn-link text-dark p-0" type="button" data-bs-toggle="collapse" data-bs-target="#logCollapse">
+                    ▼ System-Logs anzeigen
+                </button>
+                <div class="collapse mt-3" id="logCollapse">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless" style="font-size: 0.75rem; background: #fff; border-radius: 10px;">
+                            <thead>
+                                <tr class="text-muted">
+                                    <th>Zeit</th>
+                                    <th>User</th>
+                                    <th>Änderung</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in exchange.logs.all %}
+                                <tr>
+                                    <td>{{ log.created_at|date:"d.m.y H:i" }}</td>
+                                    <td>{{ log.action_by }}</td>
+                                    <td>{{ log.previous_status }} ➔ {{ log.new_status }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

@@ -1,0 +1,197 @@
+{% extends 'adminPanel/layouts/base.html' %}
+
+{% block header_title %}
+Länderverwaltung
+{% endblock %}
+
+{% block title %}
+Länderverwaltung
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css">
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <div class="card-body">
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+
+        <div class="d-flex justify-content-end mb-3">
+            <a href=""
+               data-bs-toggle="modal"
+               data-bs-target="#addCountryModal">
+                <i class="fa fa-globe add-new-record-button"></i>
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Ländername</th>
+                    <th>Ländercode</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {% for country in countries %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ country.country_name }}</td>
+                    <td>{{ country.country_code | default_if_none:"" }}</td>
+                    <td>
+
+                        <div class="edit-delete-info-masterData-div">
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#editModal{{ country.pk }}">
+                                <i class="fa-solid fa-pen-to-square edit-delete-info-buttons"></i>
+                            </a>
+                            <a href="{% url 'delete_country' country.pk %}"
+                               onclick="return confirm('Möchten Sie dieses Land löschen?')">
+                                <i class="fa fa-trash edit-delete-info-buttons" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted">
+                        Keine Daten vorhanden
+                    </td>
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<!-- Add Country Modal -->
+
+<div class="modal fade" id="addCountryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <form method="POST" action="{% url 'create_country' %}">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Neues Land hinzufügen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Ländername</label>
+                        {{ form.country_name }}
+                        {% if form.country_name.errors %}
+                        <div class="text-danger small">{{ form.country_name.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Ländercode</label>
+                        {{ form.country_code }}
+                        {% if form.country_code.errors %}
+                        <div class="text-danger small">{{ form.country_code.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Abbrechen
+                    </button>
+                    <button type="submit"
+                            class="save-button btn">
+                        Speichern
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<!-- Edit Country Modals -->
+
+{% for country in countries %}
+<div class="modal fade" id="editModal{{ country.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <form method="POST" action="{% url 'update_country' country.pk %}">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Land bearbeiten: {{ country.country_name }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">Ländername</label>
+                        <input type="text"
+                               name="country_name"
+                               class="form-control"
+                               value="{{ country.country_name }}"
+                               required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Ländercode</label>
+                        <input type="text"
+                               name="country_code"
+                               class="form-control"
+                               value="{{ country.country_code }}">
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Abbrechen
+                    </button>
+                    <button type="submit"
+                            class="save-button btn">
+                        Update speichern
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

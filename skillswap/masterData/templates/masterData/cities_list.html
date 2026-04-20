@@ -1,0 +1,205 @@
+{% extends 'adminPanel/layouts/base.html' %}
+{% block header_title %}
+Städteverwaltung
+{% endblock %}
+
+{% block title %}
+Städteverwaltung
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css">
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <div class="card-body">
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+
+        <div class="d-flex justify-content-end mb-3">
+            <a href=""
+               data-bs-toggle="modal"
+               data-bs-target="#addCityModal">
+                <i class="fa fa-globe add-new-record-button"></i>
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Ländername</th>
+                    <th>Städtename</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {% for city in cities %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ city.country.country_name }}</td>
+                    <td>{{ city.city_name }}</td>
+                    <td>
+                        <div class="edit-delete-info-masterData-div">
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#editModal{{ city.pk }}">
+                                <i class="fa-solid fa-pen-to-square edit-delete-info-buttons"></i>
+                            </a>
+                            <a href="{% url 'delete_city' city.pk %}"
+                               onclick="return confirm('Möchten Sie dieses Land löschen?')">
+                                <i class="fa fa-trash edit-delete-info-buttons" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted">
+                        Keine Daten vorhanden
+                    </td>
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- Add City Modal -->
+<div class="modal fade" id="addCityModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <form method="POST" action="{% url 'create_city' %}">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Neues Stadt hinzufügen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Land name</label>
+                        {{ form.country }}
+                        {% if form.country.errors %}
+                        <div class="text-danger small">{{ form.country.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Stadt name</label>
+                        {{ form.city_name }}
+                        {% if form.city_name.errors %}
+                        <div class="text-danger small">{{ form.city_name.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Abbrechen
+                    </button>
+                    <button type="submit"
+                            class="save-button btn">
+                        Speichern
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- Edit city Modals -->
+
+{% for city in cities %}
+<div class="modal fade" id="editModal{{ city.pk }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <form method="POST" action="{% url 'update_city' city.pk %}">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Stdat bearbeiten: {{ city.city_name }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label" for="country">Land auswählen</label>
+                        <select class="form-select" id="country" name="country" required>
+                            <option value="">--- Bitte wählen ---</option>
+
+                            {% for country in countries %}
+                            <option value="{{ country.pk }}"
+                                    {% if country.pk == city.country.pk %} selected {% endif %}>
+                                {{ country.country_name }}
+                            </option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="city_name">Stadtname</label>
+                        <input type="text" id="city_name"
+                               name="city_name"
+                               class="form-control"
+                               value="{{ city.city_name }}"
+                               required>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Abbrechen
+                    </button>
+                    <button type="submit"
+                            class="save-button btn">
+                        Update speichern
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
